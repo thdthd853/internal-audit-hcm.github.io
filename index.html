@@ -1293,7 +1293,7 @@
         data.items.forEach((item, idx) => {
           const r = startRow + idx;
           const trimmedNote = (item.note || '').trim();
-          const isPassEmptyNote = item.result === '적합' && trimmedNote === '';
+          const shouldFillDash = (item.result === '적합' || item.result === '해당없음') && trimmedNote === '';
 
           ws.getCell(r, 1).value = item.category;
           ws.getCell(r, 2).value = isNaN(Number(item.no)) ? item.no : Number(item.no);
@@ -1301,7 +1301,7 @@
           ws.getCell(r, 4).value = item.result === '적합' ? '✔' : '';
           ws.getCell(r, 5).value = item.result === '부적합, 관찰' ? '✔' : '';
           ws.getCell(r, 6).value = item.result === '해당없음' ? '✔' : '';
-          ws.getCell(r, 7).value = isPassEmptyNote ? '-' : (item.note || '');
+          ws.getCell(r, 7).value = shouldFillDash ? '-' : (item.note || '');
 
           ws.getCell(r, 1).font = fontBold;
           ws.getCell(r, 1).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
@@ -1321,7 +1321,7 @@
 
           ws.getCell(r, 7).font = fontBase;
           ws.getCell(r, 7).alignment = {
-            horizontal: isPassEmptyNote ? 'center' : 'left',
+            horizontal: shouldFillDash ? 'center' : 'left',
             vertical: 'middle',
             wrapText: true
           };
@@ -1427,9 +1427,9 @@
           ? `<td rowspan="${rowSpans[idx]}" class="pdf-center" style="font-weight:700; background:#fafafa;">${escapeHtml(item.category)}</td>`
           : '';
         const trimmedNote = (item.note || '').trim();
-        const isPassEmptyNote = item.result === '적합' && trimmedNote === '';
-        const noteDisplay = isPassEmptyNote ? '-' : item.note;
-        const noteAlignClass = isPassEmptyNote ? 'pdf-center' : 'pdf-left';
+        const shouldFillDash = (item.result === '적합' || item.result === '해당없음') && trimmedNote === '';
+        const noteDisplay = shouldFillDash ? '-' : item.note;
+        const noteAlignClass = shouldFillDash ? 'pdf-center' : 'pdf-left';
 
         return `
           <tr>
