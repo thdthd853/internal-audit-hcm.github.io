@@ -1,0 +1,1736 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>내부심사 체크리스트</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Inter & Noto Sans KR -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- ExcelJS (A4 규격 .xlsx 읽기/쓰기) -->
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+
+  <!-- Tailwind 커스텀 설정 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '"Noto Sans KR"', '"Apple SD Gothic Neo"', '"Malgun Gothic"', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              800: '#1e3a5f',
+              900: '#152944',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* 가로 스크롤바 숨김 유틸리티 */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* A4 PDF 전용 인쇄 레이아웃 스타일 */
+    .pdf-wrapper {
+      width: 718px;
+      background: #ffffff;
+      color: #0f172a;
+      font-family: 'Noto Sans KR', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+      font-size: 10.5px;
+      line-height: 1.4;
+      padding: 6px;
+    }
+    .pdf-title {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 800;
+      padding: 10px 6px;
+      background: #e2e8f0;
+      border: 1px solid #334155;
+      margin-bottom: 6px;
+    }
+    .pdf-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      margin-bottom: 8px;
+    }
+    .pdf-table th,
+    .pdf-table td {
+      border: 1px solid #475569;
+      padding: 5px 6px;
+      word-break: break-word;
+      vertical-align: middle;
+    }
+    .pdf-table th {
+      background: #f1f5f9;
+      font-weight: 700;
+      text-align: center;
+    }
+    .pdf-table tr {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .pdf-center { text-align: center; }
+    .pdf-left { text-align: left; white-space: pre-line; }
+    .pdf-mark { font-size: 13px; font-weight: 800; }
+    .pdf-mark-pass { color: #15803d; }
+    .pdf-mark-fail { color: #b91c1c; }
+    .pdf-mark-na { color: #475569; }
+    .pdf-summary-row td {
+      background: #f8fafc;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="bg-slate-200 text-slate-900 font-sans antialiased selection:bg-blue-100">
+
+  <!-- 모바일 세로 화면에 최적화된 메인 앱 컨테이너 -->
+  <div class="mx-auto min-h-screen w-full max-w-md bg-slate-100 shadow-2xl relative pb-28 sm:my-4 sm:rounded-3xl sm:overflow-x-clip sm:border sm:border-slate-300">
+
+    <!-- 상단 고정 헤더 -->
+    <header class="sticky top-0 z-40 bg-navy-800 text-white shadow-md sm:rounded-t-3xl">
+      <div class="px-4 pt-3.5 pb-2.5 flex items-center justify-between gap-2">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-bold tracking-tight truncate">내부심사 체크리스트</h1>
+            <span id="sourceBadge" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/15 text-blue-100 whitespace-nowrap">
+              연결 확인중
+            </span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button type="button" id="btnPreviewA4" title="A4 양식 미리보기"
+            class="px-2.5 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 active:bg-white/30 text-xs font-semibold transition">
+            A4 보기
+          </button>
+          <button type="button" id="btnReload" title="구글 시트 다시 불러오기"
+            class="p-2 rounded-xl bg-white/15 hover:bg-white/25 active:bg-white/30 transition" aria-label="새로고침">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+          <button type="button" id="btnSettings" title="스프레드시트 설정"
+            class="p-2 rounded-xl bg-white/15 hover:bg-white/25 active:bg-white/30 transition" aria-label="설정">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 시트 선택 탭 -->
+      <nav id="sheetTabs" class="px-3 pb-3 flex gap-1.5 overflow-x-auto no-scrollbar"></nav>
+    </header>
+
+    <!-- 실시간 심사결과 요약 및 원터치 필터 바 -->
+    <section id="statsBar" class="sticky top-[98px] z-30 bg-white/95 backdrop-blur border-b border-slate-200 px-3 py-2 grid grid-cols-4 gap-1.5 shadow-sm">
+      <button type="button" data-filter="적합"
+        class="stat-pill flex flex-col items-center justify-center py-1.5 px-1 rounded-xl border border-slate-200 bg-slate-50 transition">
+        <span class="text-[11px] font-semibold text-slate-500">적합</span>
+        <span id="statPass" class="text-sm font-extrabold text-emerald-700 leading-tight mt-0.5">0</span>
+      </button>
+      <button type="button" data-filter="부적합, 관찰"
+        class="stat-pill flex flex-col items-center justify-center py-1.5 px-1 rounded-xl border border-slate-200 bg-slate-50 transition">
+        <span class="text-[11px] font-semibold text-slate-500">부적합,관찰</span>
+        <span id="statFail" class="text-sm font-extrabold text-rose-700 leading-tight mt-0.5">0</span>
+      </button>
+      <button type="button" data-filter="해당없음"
+        class="stat-pill flex flex-col items-center justify-center py-1.5 px-1 rounded-xl border border-slate-200 bg-slate-50 transition">
+        <span class="text-[11px] font-semibold text-slate-500">해당없음</span>
+        <span id="statNa" class="text-sm font-extrabold text-slate-600 leading-tight mt-0.5">0</span>
+      </button>
+      <button type="button" data-filter="ALL"
+        class="stat-pill flex flex-col items-center justify-center py-1.5 px-1 rounded-xl border border-slate-200 bg-slate-50 transition">
+        <span class="text-[11px] font-semibold text-slate-500">적합률(전체)</span>
+        <span id="statRate" class="text-sm font-extrabold text-navy-800 leading-tight mt-0.5">0%</span>
+      </button>
+    </section>
+
+    <!-- 메인 본문 -->
+    <main class="p-3 space-y-3">
+
+      <!-- 상태 안내 배너 (구글 시트 공유 안내 등) -->
+      <div id="statusBanner" class="hidden rounded-2xl p-3 text-xs leading-relaxed border"></div>
+
+      <!-- 기본 정보 입력 카드 (아코디언) -->
+      <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <button type="button" id="metaToggle"
+          class="w-full px-4 py-3 bg-slate-50/80 flex items-center justify-between text-left active:bg-slate-100 transition">
+          <div class="min-w-0 pr-2">
+            <div class="text-sm font-bold text-navy-800">기본 정보 입력</div>
+            <div id="metaSummary" class="text-xs text-slate-500 truncate mt-0.5">심사 일자, 대상 부서, 심사원 등을 입력하세요</div>
+          </div>
+          <span id="metaToggleIcon" class="shrink-0 text-xs font-bold text-slate-500 bg-slate-200/70 px-2.5 py-1 rounded-lg">
+            접기 ▲
+          </span>
+        </button>
+
+        <div id="metaBody" class="p-4 border-t border-slate-200 grid grid-cols-2 gap-3">
+          <!-- 심사 일자 -->
+          <div class="flex flex-col gap-1">
+            <label for="metaDate" class="text-xs font-bold text-slate-700">심사 일자</label>
+            <input type="date" id="metaDate"
+              class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+          </div>
+
+          <!-- 심사 구분 -->
+          <div class="flex flex-col gap-1">
+            <span class="text-xs font-bold text-slate-700">심사 구분</span>
+            <div class="grid grid-cols-2 gap-1.5 h-[42px]">
+              <button type="button" data-audit-type="정기심사"
+                class="seg-btn rounded-xl border text-xs font-bold transition bg-navy-800 border-navy-800 text-white">
+                정기심사
+              </button>
+              <button type="button" data-audit-type="특별심사"
+                class="seg-btn rounded-xl border text-xs font-bold transition bg-slate-50 border-slate-300 text-slate-600">
+                특별심사
+              </button>
+            </div>
+          </div>
+
+          <!-- 대상 부서 -->
+          <div class="flex flex-col gap-1">
+            <label for="metaDept" class="text-xs font-bold text-slate-700">대상 부서 <span class="text-blue-600 font-semibold">(파일명)</span></label>
+            <input type="text" id="metaDept" placeholder="예: 본사, 기흥그룹"
+              class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+          </div>
+
+          <!-- 심사원 -->
+          <div class="flex flex-col gap-1">
+            <label for="metaAuditor" class="text-xs font-bold text-slate-700">심사원</label>
+            <input type="text" id="metaAuditor" placeholder="심사원 성명"
+              class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+          </div>
+
+          <!-- 피심사원 -->
+          <div class="flex flex-col gap-1">
+            <label for="metaAuditee" class="text-xs font-bold text-slate-700">피심사원</label>
+            <input type="text" id="metaAuditee" placeholder="피심사원 성명"
+              class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+          </div>
+
+          <!-- 상단 비고 -->
+          <div class="flex flex-col gap-1">
+            <label for="metaNote" class="text-xs font-bold text-slate-700">비고 (공통)</label>
+            <input type="text" id="metaNote" placeholder="공통 비고 입력"
+              class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+          </div>
+
+          <!-- 저장될 파일명 실시간 미리보기 -->
+          <div class="col-span-2 bg-slate-100 rounded-xl px-3 py-2 text-xs text-slate-600 flex items-center justify-between gap-2">
+            <span class="truncate">저장 파일명: <strong id="filenamePreview" class="text-navy-800">내부심사 체크리스트_본사</strong></span>
+            <span class="shrink-0 text-[10px] font-semibold bg-white px-2 py-0.5 rounded-md border border-slate-200 text-slate-500">.xlsx</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 관련표준 선택 필터 및 초기화 바 -->
+      <div class="flex items-center gap-2">
+        <select id="categoryFilter"
+          class="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-800 shadow-sm focus:outline-none focus:border-navy-800">
+          <option value="ALL">전체 관련표준 보기</option>
+        </select>
+        <button type="button" id="btnResetSheet"
+          class="shrink-0 px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 active:bg-slate-100 shadow-sm">
+          초기화
+        </button>
+      </div>
+
+      <!-- 체크리스트 항목 렌더링 영역 -->
+      <div id="checklistContainer" class="space-y-2.5">
+        <div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-sm text-slate-500">
+          양식을 불러오는 중입니다...
+        </div>
+      </div>
+
+    </main>
+
+    <!-- 하단 고정 내보내기 액션 바 (Excel 전용) -->
+    <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/95 backdrop-blur border-t border-slate-200 px-3 py-2.5 z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+      <button type="button" id="btnExportExcel"
+        class="w-full min-h-[48px] rounded-2xl bg-emerald-700 hover:bg-emerald-800 active:scale-[0.98] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Excel(.xlsx) 파일로 저장
+      </button>
+    </div>
+
+  </div>
+
+  <!-- 토스트 알림 컨테이너 -->
+  <div id="toastContainer" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4 pointer-events-none flex flex-col gap-2"></div>
+
+  <!-- 로딩 오버레이 -->
+  <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-[1px] z-50 hidden flex-col items-center justify-center text-white p-6 text-center">
+    <div class="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin mb-3"></div>
+    <p id="loadingText" class="text-sm font-semibold whitespace-pre-line">처리 중입니다...</p>
+  </div>
+
+  <!-- 커스텀 확인 모달 (alert/confirm 대체) -->
+  <div id="dialogModal" class="fixed inset-0 bg-slate-900/55 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl border border-slate-200">
+      <h3 id="dialogTitle" class="text-base font-bold text-slate-900 mb-2">안내</h3>
+      <p id="dialogMessage" class="text-sm text-slate-600 whitespace-pre-line leading-relaxed mb-5"></p>
+      <div id="dialogActions" class="flex gap-2 justify-end"></div>
+    </div>
+  </div>
+
+  <!-- 설정 바텀 시트 모달 -->
+  <div id="settingsModal" class="fixed inset-0 bg-slate-900/55 z-50 hidden items-end justify-center">
+    <div class="bg-white w-full max-w-md rounded-t-3xl p-5 pb-8 max-h-[85vh] overflow-y-auto shadow-2xl">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-extrabold text-slate-900">스프레드시트 연결 및 설정</h2>
+        <button type="button" id="btnCloseSettings" class="px-3 py-1.5 rounded-xl bg-slate-100 text-xs font-bold text-slate-600 hover:bg-slate-200">
+          닫기
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <!-- 구글 스프레드시트 링크 설정 -->
+        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+          <label for="sheetUrlInput" class="block text-xs font-bold text-slate-800">구글 스프레드시트 공유 링크</label>
+          <p class="text-[11.5px] text-slate-500 leading-relaxed">
+            구글 시트 우측 상단 <strong>[공유] → 링크가 있는 모든 사용자(뷰어)</strong>로 설정하면 최신 양식을 실시간으로 불러옵니다.
+          </p>
+          <input type="text" id="sheetUrlInput"
+            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-xs text-slate-800 focus:outline-none focus:border-navy-800"
+            placeholder="https://docs.google.com/spreadsheets/d/..." />
+          <button type="button" id="btnApplyUrl"
+            class="w-full py-2.5 rounded-xl bg-navy-800 hover:bg-navy-900 text-white text-xs font-bold transition">
+            구글 시트 실시간 불러오기
+          </button>
+        </div>
+
+        <!-- 로컬 엑셀 업로드 -->
+        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+          <div class="text-xs font-bold text-slate-800">로컬 엑셀 파일(.xlsx) 불러오기</div>
+          <p class="text-[11.5px] text-slate-500 leading-relaxed">
+            보안 정책으로 링크 공유가 어렵거나 오프라인일 때, 기기에 저장된 체크리스트 양식(.xlsx)을 직접 불러올 수 있습니다.
+          </p>
+          <input type="file" id="localFileInput" accept=".xlsx" class="hidden" />
+          <button type="button" id="btnLocalFile"
+            class="w-full py-2.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 text-xs font-bold transition">
+            로컬 .xlsx 양식 파일 선택
+          </button>
+        </div>
+
+        <!-- 내장 기본 양식 복구 -->
+        <button type="button" id="btnUseEmbedded"
+          class="w-full py-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold hover:bg-blue-100 transition">
+          내장된 기본 체크리스트 양식으로 전환
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- A4 출력 양식 미리보기 모달 -->
+  <div id="previewModal" class="fixed inset-0 bg-slate-900/65 z-50 hidden flex-col items-center justify-center p-3">
+    <div class="bg-white w-full max-w-2xl max-h-[90vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl">
+      <div class="px-4 py-3 bg-navy-800 text-white flex items-center justify-between shrink-0">
+        <div>
+          <h3 class="text-sm font-bold">A4 출력 양식 미리보기</h3>
+          <p id="previewFileLabel" class="text-[11px] text-blue-200 mt-0.5"></p>
+        </div>
+        <button type="button" id="btnClosePreview" class="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-bold">
+          닫기
+        </button>
+      </div>
+      <div id="previewBody" class="p-3 overflow-auto bg-slate-200 flex-1 flex justify-center">
+        <!-- A4 HTML 테이블이 동적으로 렌더링됩니다 -->
+      </div>
+      <div class="p-3 bg-white border-t border-slate-200 shrink-0">
+        <button type="button" id="btnPreviewExcel" class="w-full py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition">
+          Excel(.xlsx) 파일로 저장
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**********************************************************************
+     * 1. 기본 설정 및 내장 체크리스트 원본 데이터
+     *    (구글 시트 공유 설정 전에도 Canvas에서 즉시 확인 가능하도록
+     *     실제 스프레드시트 3개 탭의 전체 항목을 그대로 내장)
+     **********************************************************************/
+    const DEFAULT_SHEET_URL = 'https://drive.google.com/open?id=1_5jxIkoYoXlfsu72S5AyYMm1vXR5cwIhu565NjaoeoY&usp=drive_copy';
+    const DEFAULT_SHEET_NAMES = [
+      '1. 시스템 체제(본사)',
+      '2. 시스템 체제(사업장)',
+      '3. 현장활동(사업장)'
+    ];
+    const RESULT_OPTIONS = ['적합', '부적합, 관찰', '해당없음'];
+
+    function buildEmbeddedTemplates() {
+      const makeItems = (rawList) => rawList.map((row, idx) => ({
+        idx,
+        category: row[0],
+        no: String(row[1]),
+        text: row[2],
+        result: '적합', // 기본값: 적합
+        note: ''
+      }));
+
+      return {
+        '1. 시스템 체제(본사)': {
+          title: '내부심사 체크리스트 (시스템 체제 분야 - 본사)',
+          defaultDept: '본사',
+          items: makeItems([
+            ['4. 조직상황', 1, '이슈사항에 대한 정보를 모니터링하고 검토하고 있는가?'],
+            ['4. 조직상황', 2, '고객 요구사항과 적용되는 법적 및 규제적 요구사항을 충족하는 안전보건을 일관성 있게 제공하고 있는가?'],
+            ['4. 조직상황', 3, '안전보건경영시스템에 필요한 프로세스를 정하고, 조직 전반에 프로세스에 적용하고 있는가?'],
+            ['5. 리더십과 근로자 참여', 1, '최고경영자는 안전보건경영시스템에 대한 리더십과 의지표명에 따른 실행 의지를 실증하고 있는가?'],
+            ['5. 리더십과 근로자 참여', 2, '안전보건방침을 수립, 실행 및 유지하고 있는가?'],
+            ['5. 리더십과 근로자 참여', 3, '문서화 된 정보를 유지하고 있으며 이해관계자에게 제공하고 있는가?'],
+            ['5. 리더십과 근로자 참여', 4, '안전보건경영시스템의 개발, 기획, 실행, 성과평가 및 개선을 위한 조치에 대하여 근로자와 근로자대표의 협의와 참여를 위한 프로세스를 수립, 실행 및 유지하고 있는가?'],
+            ['6. 기획', 1, '위험성평가 절차는 수립되어 있는가?'],
+            ['6. 기획', 2, '기타 리스크 평가를 실시하고 있으며 안전보건에 관한 주요 이슈사항이 누락되고 있지는 않은가?\n- 안전보건상의 제반법규의 내용\n- 안전보건에 관한 주요 트렌드\n- 근로자 및 이해관계자의 요청사항'],
+            ['6. 기획', 3, '위험성 평가 및 기타 리스크 평가는 실시하고 있는가? (정기 및 수시평가)'],
+            ['6. 기획', 4, '위험성평가 시 근로자의 참여가 이루어지고 있는가?'],
+            ['6. 기획', 5, '아차사고는 발굴하여 위험성 평가에 반영하고 있는가?'],
+            ['6. 기획', 6, '최신 법적 요구사항 및 기타 요구사항이 결정, 이용되고 있는가?'],
+            ['6. 기획', 7, '파악된 법규가 근로자 및 이해관계자에게 전달되는가?'],
+            ['6. 기획', 8, '안전보건 목표는 안전보건방침과 부합하고 있으며 추진계획과 연계되어 있는가?'],
+            ['7. 지원', 1, '최고경영자는 안전보건경영시스템의 수립, 실행, 유지 및 지속적 개선에 필요한 자원을 제공하고 있는가?'],
+            ['7. 지원', 2, '근로자는 적절한 학력, 교육훈련 또는 경험을 통해 적절한 역량을 갖추고 있는가?'],
+            ['7. 지원', 3, '교육훈련 및 자격절차가 문서화 된 정보로 수립되어 있는가?'],
+            ['7. 지원', 4, '근로자는 안전보건 방침과 안전보건 목표, 위험요인, 안전보건 리스크 및 결정된 조치에 대하여 인식하고 있는가?'],
+            ['7. 지원', 5, '안전보건경영시스템에 관련되는 내부 및 외부 의사소통에 필요한 프로세스를 수립, 실행 및 유지하고 있는가?'],
+            ['7. 지원', 6, '의사소통에 관한 세부절차로 의사소통 및 정보 제공 절차는 수립되어 있는가?'],
+            ['7. 지원', 7, '문서화 된 정보에 따른 세부절차로 문서화 및 문서 관리절차, 기록관리 절차는 수립되어 있는가?'],
+            ['8. 운용', 1, '안전보건관리규정은 작성 및 개정되고 있는가?'],
+            ['8. 운용', 2, '위험요인을 제거하고 안전보건 리스크를 감소하기 위한 프로세스를 수립, 실행 및 유지하고 있는가?'],
+            ['8. 운용', 3, '안전보건성과에 영향을 주는 임시 및 영구적인 변경의 실행과 관리를 위한 프로세스를 수립하고 있는가?'],
+            ['8. 운용', 4, '제품 및 서비스의 적합성을 보장하기 위한 조달관리 프로세스를 수립, 실행 및 유지하고 있는가?'],
+            ['8. 운용', 5, '조달관리, 변경관리 절차는 수립되어 있는가?'],
+            ['8. 운용', 6, '응급조치 제공을 포함하여 비상상황에 대한 대응계획 수립하고 있는가?'],
+            ['8. 운용', 7, '잠재적인 비상상황에 대응하기 위한 프로세스 및 시나리오는 작성 유지되고 있는가?'],
+            ['9. 성과평가', 1, '모니터링, 측정, 분석 및 성과평가를 위한 프로세스를 수립, 실행 및 유지하고 있는가?'],
+            ['9. 성과평가', 2, '안전보건성과를 평가하고, 안전보건경영시스템의 효과성을 결정하고 있는가?'],
+            ['9. 성과평가', 3, '모니터링 및 측정 수행 시기는 정해져 있는가?'],
+            ['9. 성과평가', 4, '법적 요구사항 및 기타 요구사항의 준수 평가를 실시하고 있는가?'],
+            ['9. 성과평가', 5, '계획된 주기로 내부심사를 수행하고 있으며, 내부심사원은 독립된 자에 의해 수행되는가?'],
+            ['9. 성과평가', 6, '내부심사 프로그램은 구비되어 있으며 심사 결과가 관련 경영자, 근로자대표, 기타 이해관계자에게 보고됨을 보장하고 있는가?'],
+            ['9. 성과평가', 7, '부적합사항을 다루고 안전보건성과를 지속적으로 개선하는 조치를 취하고 있는가?'],
+            ['9. 성과평가', 8, '안전보건경영시스템의 지속적인 적절성, 충족성 및 효과성을 보장하기 위하여, 계획된 주기로 경영검토가 이루어지고 있는가?'],
+            ['9. 성과평가', 9, '경영검토 사항에는 안전보건경영시스템과 관련된, 외부 및 내부 이슈의 변경 등 포함하여야 할 사항이 누락되지는 않았는가?'],
+            ['9. 성과평가', 10, '최고경영자는 경영검토의 관련 출력사항을 근로자 및 근로자 대표와 의사소통 하고 있는가?'],
+            ['10. 개선', 1, '의도된 결과를 달성하기 위해 개선활동 등 필요한 조치를 실행하며 부적합 시정조치 및 지속적 개선 절차에 따른 절차를 구비하고 있는가?'],
+            ['10. 개선', 2, '사건 또는 부적합이 재발하거나 다른 곳에서 발생하지 않도록, 사건 또는 부적합의 원인을 제거하기 위한 시정조치를 시행하고 있는가?'],
+            ['10. 개선', 3, '변경된 위험요인에 관련된 안전보건 리스크를 조치를 취하기 전에 평가가 이루어지고 있는가?'],
+            ['10. 개선', 4, '안전보건경영시스템의 지속적 개선을 위한 조치의 실행에 근로자 참여를 촉진하고 있는가?'],
+            ['10. 개선', 5, '지속적 개선의 증거로 문서화 된 정보를 유지 및 보유하고 있는가?']
+          ])
+        },
+
+        '2. 시스템 체제(사업장)': {
+          title: '사업장 내부심사 체크리스트 (시스템 체제 분야)',
+          defaultDept: '',
+          items: makeItems([
+            ['4. 조직상황', 1, '사업장 내 안전보건 이슈사항에 대한 정보를 모니터링하고 검토하고 있는가?'],
+            ['4. 조직상황', 2, '고객 요구사항 및 적용되는 법적 및 규제적 안전보건 정보를 근로자에게 제공하고 있는가?'],
+            ['4. 조직상황', 3, '안전보건경영시스템 유지를 위한 조직이 구성되고 적절한 교육 및 훈련이 이루어지고 있는가?'],
+            ['5. 리더십과 근로자 참여', 1, '근로자가 업무를 수행함에 있어 필요한 자격, 훈련 및 교육을 갖추도록 관리하고 있는가?'],
+            ['5. 리더십과 근로자 참여', 2, '안전보건 경영방침을 근로자가 알 수 있도록 전파하였는가?'],
+            ['6. 기획', 1, '위험성 평가는 실시시기에 맞추어 실시하고 있는가? (정기 및 수시평가)'],
+            ['6. 기획', 2, '위험성평가 시 근로자의 참여가 이루어지고 있는가?'],
+            ['6. 기획', 3, '아차사고는 발굴하여 위험성 평가에 반영하고 있는가?'],
+            ['6. 기획', 4, '법규관리 절차에 따라 파악된 법규내용이 근로자에게 전달되었는가?'],
+            ['7. 지원', 1, '근로자는 안전보건 경영방침과 안전보건 목표, 위험요인, 안전보건 리스크 및 결정된 조치에 대하여 인식하고 있는가?'],
+            ['7. 지원', 2, '의사소통 프로세스에 따른 절차를 이행하고 있는가? (산업안전보건위원회 등)'],
+            ['7. 지원', 3, '사업장 내 안전보건에 관한 문서는 적절하게 관리되고 있는가?'],
+            ['8. 운용', 1, '안전보건관리규정을 근로자가 알 수 있도록 전파하였는가?'],
+            ['8. 운용', 2, '비상시 대응을 위한 절차를 근로자에게 교육하였는가?'],
+            ['8. 운용', 3, '비상대응훈련은 적절한 시기에 맞추어 진행되었는가?'],
+            ['8. 운용', 4, '관리감독자 등의 점검은 적절하게 이루어졌는가?'],
+            ['9. 성과평가', 1, '안전보건 목표 달성을 위한 교육 등의 결과 및 성과를 관리하고 있는가?'],
+            ['10. 개선', 1, '관리감독자 등의 점검 진행 후 개선이 필요한 사항에 대한 개선이 이루어졌는가?'],
+            ['10. 개선', 2, '위험성평가 진행 후 개선이 필요한 사항에 대한 개선이 이루어졌는가?']
+          ])
+        },
+
+        '3. 현장활동(사업장)': {
+          title: '사업장 내부심사 체크리스트 (현장활동 분야)',
+          defaultDept: '',
+          items: makeItems([
+            ['1. 작업장의 안전조치', 1, '작업구역 설정 및 현장관리 상태'],
+            ['1. 작업장의 안전조치', 2, '통로구분, 비상구설치 및 안전표지 상태'],
+            ['1. 작업장의 안전조치', 3, '바닥, 개구부 등의 추락방지 및 낙하물 관리상태'],
+            ['2. 중량물·운반기계에 대한 안전조치', 1, '동력 운반관리 작업지침에 따른 준수여부'],
+            ['2. 중량물·운반기계에 대한 안전조치', 2, '인력 운반관리 기준의 설정 및 준수상태'],
+            ['2. 중량물·운반기계에 대한 안전조치', 3, '운반기계의 안전방호조치 여부'],
+            ['3. 개인보호구 지급 및 관리', 1, '보호구 지급, 착용 및 관리대장 작성상태'],
+            ['3. 개인보호구 지급 및 관리', 2, '보호구 착용 및 안전인증제품 사용 상태'],
+            ['3. 개인보호구 지급 및 관리', 3, '보호구의 예비품 보유 여부'],
+            ['3. 개인보호구 지급 및 관리', 4, '보호구 보관상태'],
+            ['4. 위험기계·기구에 대한 방호조치', 1, '위험기계·기구의 파악 및 관리상태'],
+            ['4. 위험기계·기구에 대한 방호조치', 2, '위험기계·기구에 대한 방호조치 설치상태 및 후속 조치 수행상태'],
+            ['5. 떨어짐·무너짐에 의한 위험 방지', 1, '개구부 방호, 안전대 설치, 승강설비 설치, 구명구 비치, 울타리 설치, 조명유지 등 떨어짐 위험방지 조치 여부'],
+            ['5. 떨어짐·무너짐에 의한 위험 방지', 2, '무너짐·맞음에 의한 위험방지조치 실시 여부'],
+            ['5. 떨어짐·무너짐에 의한 위험 방지', 3, '사다리 안전조치 및 2인 1조 작업 여부'],
+            ['5. 떨어짐·무너짐에 의한 위험 방지', 4, '고소작업시의 안전관리상태'],
+            ['6. 안전검사 실시', 1, '안전검사 대상의 파악 및 수행방법 파악상태'],
+            ['6. 안전검사 실시', 2, '대상 설비별 주기, 방법에 따른 실시 여부'],
+            ['6. 안전검사 실시', 3, '안전검사대상 기계의 리스트 관리 및 안전검사필증의 부착 여부'],
+            ['7. 폭발·화재 및 위험물 누출 예방 활동', 1, '폭발·화재 및 위험물 누출에 의한 위험방지 조치가 이루어지고 있는지 여부'],
+            ['7. 폭발·화재 및 위험물 누출 예방 활동', 2, '보수점검 계획에 의거 주기적으로 점검하고 비상시대피요령을 알고 있는지 여부'],
+            ['7. 폭발·화재 및 위험물 누출 예방 활동', 3, '화학설비·압력용기 등은 건축물의 구조 검토, 부식 방지, 밸브 개폐방향 표시, 안전밸브·파열판·화염방지기 설치, 계측장치·자동경보장치·긴급차단장치 설치 등 위험방지조치 여부'],
+            ['8. 전기재해 예방활동', 1, '전기 노출 충전부의 방호상태'],
+            ['8. 전기재해 예방활동', 2, '누전차단기/과전류 보호장치, 접지 등의 설치상태'],
+            ['8. 전기재해 예방활동', 3, '방폭전기 기기의 설치 및 관리상태'],
+            ['8. 전기재해 예방활동', 4, '전기설비의 정기점검상태'],
+            ['9. 쾌적한 작업환경 유지활동', 1, '유해화학물질 취급근로자의 건강장해 및 직업병을 예방하기 위한 조치 여부'],
+            ['9. 쾌적한 작업환경 유지활동', 2, '취급 유해물질을 목록화하고 물질안전보건자료(MSDS) 비치 또는 게시 여부, 관련 보호구 착용 여부'],
+            ['9. 쾌적한 작업환경 유지활동', 3, '작업환경측정대상 유해인자에 노출되는 근로자의 건강장해를 예방하기 위한 유해인자관리 여부'],
+            ['9. 쾌적한 작업환경 유지활동', 4, '관리대상·허가대상·금지유해물질에 대한 건강장해 예방을 위해 국소배기장치·경보설비·잠금장치·긴급차단장치·세척시설·목욕설비·세안설비 설치, 작업장바닥의 관리, 부식·누출방지조치, 청소, 출입금지, 보호구 지급, 명칭 등 게시, 유해성 주지, 흡연금지, 작업수칙 준수, 사고시 대피, 취급일지 작성 등의 조치 여부'],
+            ['10. 근로자 건강장해 예방활동', 1, '근로자 건강진단 실시 상태여부 및 후속조치 상태'],
+            ['10. 근로자 건강장해 예방활동', 2, '근로자 업무상질병 예방을 위한 관련 프로그램 수립 여부'],
+            ['10. 근로자 건강장해 예방활동', 3, '고령, 여성, 외국인 등 취약계층 근로자의 건강증진 및 작업환경개선을 위한 건강장해 예방조치 여부'],
+            ['10. 근로자 건강장해 예방활동', 4, '온·습도조절장치, 환기장치, 휴게시설, 세척시설 등의 설치, 음료수 등의 비치, 보호구 지급 등 온도·습도에 의한 건강장해예방 조치 여부'],
+            ['10. 근로자 건강장해 예방활동', 5, '방사선물질의 밀폐, 관리구역의 지정, 차폐물·국소배기장치·방지설비의 설치, 취급용구·보호구 지급, 폐기물 처리, 흡연금지, 유해성 주지 등 방사선에 의한 건강장해 예방조치 여부'],
+            ['10. 근로자 건강장해 예방활동', 6, '유해성 주지, 오염방지 조치, 감염예방조치 등 병원체의 건강장해 예방조치 여부'],
+            ['10. 근로자 건강장해 예방활동', 7, '사무실에서의 건강장해 예방조치 여부'],
+            ['10. 근로자 건강장해 예방활동', 8, '밀폐공간 작업으로 인한 건강장해 예방조치 여부'],
+            ['11. 협력업체의 안전보건활동 지원', 1, '협력업체에 대한 적절한 안전보건관리 실시여부'],
+            ['11. 협력업체의 안전보건활동 지원', 2, '안전보건총괄책임자를 지정하고 안전보건에 관한 협의체의 참여, 작업장 순회점검, 근로자 안전보건교육 지원 등 도급 시의 안전보건조치를 수행여부'],
+            ['11. 협력업체의 안전보건활동 지원', 3, '중금속취급 유해작업, 제조·사용허가 대상물질취급 작업 등을 도급 시 안전·보건기준을 준수여부'],
+            ['12. 안전·보건 관계자 역할 및 활동', 1, '안전관리자 및 보건관리자를 지정하고, 안전보건경영시스템의 실행 및 운영활동과 안전보건 목표를 달성하기 위한 역할의 수행여부'],
+            ['12. 안전·보건 관계자 역할 및 활동', 2, '안전보건관리책임자를 선임하고, 해당 관리감독자를 지정하여 안전보건 관련 역할을 수행여부'],
+            ['13. 산업재해 조사활동', 1, '사업장(협력업체 포함)에서 재해발생 시 원인조사 및 재발방지대책 실행여부'],
+            ['13. 산업재해 조사활동', 2, '재해통계분석의 정기적 실시 및 익년도 안전보건 활동 목표의 반영여부'],
+            ['14. 비일상적인 재해예방활동', 1, '기계 등의 정비·청소 또는 이와 유사한 이유로 이루어지는 비정형작업은 작업시작 전에 유해·위험요인에 대한 파악과 제거하는 등 위험성평가 절차에 따라 안전보건이 확보된 상태에서의 작업 수행여부'],
+            ['14. 비일상적인 재해예방활동', 2, '기계·설비 등의 정비·보수 작업 시 운전을 정지하고 불시기동 방지를 위한 잠금장치(L/O) 및 표시장치(T/O)의 실시여부'],
+            ['15. 작업 전 안전회의(TBM), 안전제안활동', 1, '조직 여건에 맞게 작업 전 안전회의(TBM) 등으로 작업 전에 위험요인과 기본적인 안전수칙을 알리고 점검하는 활동의 시행여부'],
+            ['15. 작업 전 안전회의(TBM), 안전제안활동', 2, '근로자들에게 위험관리를 위한 의견을 제안 받는 안전제안활동의 시행여부'],
+            ['15. 작업 전 안전회의(TBM), 안전제안활동', 3, '근로자가 작업 도중 위험을 감지하면 즉시 작업을 중단할 수 있는 작업중지권과 신고할 수 있는 권리의 보장 여부']
+          ])
+        }
+      };
+    }
+
+    /**********************************************************************
+     * 2. 애플리케이션 인메모리 상태
+     **********************************************************************/
+    const state = {
+      sheetUrl: DEFAULT_SHEET_URL,
+      sheetNames: [...DEFAULT_SHEET_NAMES],
+      currentSheet: DEFAULT_SHEET_NAMES[0],
+      sheetsData: {},       // { [sheetName]: { title, meta, items, source } }
+      resultFilter: 'ALL',  // 'ALL' | '적합' | '부적합, 관찰' | '해당없음'
+      categoryFilter: 'ALL',
+      metaCollapsed: false
+    };
+
+    /**********************************************************************
+     * 3. 유틸리티 및 커스텀 UI 피드백 (토스트 & 모달)
+     **********************************************************************/
+    function getTodayISO() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function formatKoreanDate(isoDate) {
+      if (!isoDate) return '20  년   월   일';
+      const parts = isoDate.split('-');
+      if (parts.length !== 3) return isoDate;
+      return `${parts[0]}년 ${Number(parts[1])}월 ${Number(parts[2])}일`;
+    }
+
+    function extractSpreadsheetId(urlOrId) {
+      if (!urlOrId) return '';
+      const trimmed = urlOrId.trim();
+      const matchPath = trimmed.match(/\/d\/([a-zA-Z0-9-_]+)/);
+      if (matchPath) return matchPath[1];
+      const matchParam = trimmed.match(/[?&]id=([a-zA-Z0-9-_]+)/);
+      if (matchParam) return matchParam[1];
+      if (/^[a-zA-Z0-9-_]{20,}$/.test(trimmed)) return trimmed;
+      return '';
+    }
+
+    function sanitizeFilename(name) {
+      return (name || '').replace(/[\\/:*?"<>|]/g, '_').trim();
+    }
+
+    function getExportFileName() {
+      const data = state.sheetsData[state.currentSheet];
+      const dept = sanitizeFilename(data?.meta?.department);
+      return `내부심사 체크리스트_${dept || '미지정'}`;
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const styleMap = {
+        info: 'bg-slate-900 text-white',
+        success: 'bg-emerald-700 text-white',
+        warning: 'bg-amber-600 text-white',
+        error: 'bg-rose-700 text-white'
+      };
+      toast.className = `pointer-events-auto px-4 py-2.5 rounded-2xl text-xs font-bold shadow-lg text-center transition-all duration-200 opacity-0 translate-y-[-6px] ${styleMap[type] || styleMap.info}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('opacity-0', 'translate-y-[-6px]');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-[-6px]');
+        setTimeout(() => toast.remove(), 220);
+      }, 2800);
+    }
+
+    function showLoading(text = '처리 중입니다...') {
+      document.getElementById('loadingText').textContent = text;
+      const overlay = document.getElementById('loadingOverlay');
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+    }
+
+    function hideLoading() {
+      const overlay = document.getElementById('loadingOverlay');
+      overlay.classList.add('hidden');
+      overlay.classList.remove('flex');
+    }
+
+    /**
+     * 브라우저 기본 alert/confirm을 대체하는 커스텀 모달
+     */
+    function openDialog({ title = '안내', message = '', confirmText = '확인', cancelText = null, danger = false }) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('dialogModal');
+        document.getElementById('dialogTitle').textContent = title;
+        document.getElementById('dialogMessage').textContent = message;
+
+        const actionsEl = document.getElementById('dialogActions');
+        actionsEl.innerHTML = '';
+
+        const close = (result) => {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+          resolve(result);
+        };
+
+        if (cancelText) {
+          const btnCancel = document.createElement('button');
+          btnCancel.type = 'button';
+          btnCancel.className = 'px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition';
+          btnCancel.textContent = cancelText;
+          btnCancel.onclick = () => close(false);
+          actionsEl.appendChild(btnCancel);
+        }
+
+        const btnOk = document.createElement('button');
+        btnOk.type = 'button';
+        btnOk.className = `px-4 py-2.5 rounded-xl text-white text-xs font-bold transition ${danger ? 'bg-rose-600 hover:bg-rose-700' : 'bg-navy-800 hover:bg-navy-900'}`;
+        btnOk.textContent = confirmText;
+        btnOk.onclick = () => close(true);
+        actionsEl.appendChild(btnOk);
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      });
+    }
+
+    function setStatusBanner(html, tone = 'info') {
+      const el = document.getElementById('statusBanner');
+      const toneClasses = {
+        info: 'bg-blue-50 border-blue-200 text-blue-900',
+        warning: 'bg-amber-50 border-amber-200 text-amber-900',
+        error: 'bg-rose-50 border-rose-200 text-rose-900'
+      };
+      el.className = `rounded-2xl p-3 text-xs leading-relaxed border ${toneClasses[tone] || toneClasses.info}`;
+      el.innerHTML = html;
+    }
+
+    function hideStatusBanner() {
+      document.getElementById('statusBanner').className = 'hidden';
+    }
+
+    function updateSourceBadge(source) {
+      const badge = document.getElementById('sourceBadge');
+      if (source === 'google') {
+        badge.textContent = '시트 실시간 연동';
+        badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/25 text-emerald-100 whitespace-nowrap';
+      } else if (source === 'local') {
+        badge.textContent = '로컬 .xlsx';
+        badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-400/25 text-sky-100 whitespace-nowrap';
+      } else {
+        badge.textContent = '내장 양식';
+        badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-400/25 text-amber-100 whitespace-nowrap';
+      }
+    }
+
+    /**********************************************************************
+     * 4. 구글 스프레드시트 JSONP 로드 및 파싱
+     **********************************************************************/
+    function fetchGoogleSheetJSONP(spreadsheetId, sheetName) {
+      return new Promise((resolve, reject) => {
+        const cbName = '__gsheet_cb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+        const script = document.createElement('script');
+
+        const cleanup = () => {
+          clearTimeout(timer);
+          delete window[cbName];
+          if (script.parentNode) script.parentNode.removeChild(script);
+        };
+
+        const timer = setTimeout(() => {
+          cleanup();
+          reject(new Error('구글 시트 응답 시간 초과'));
+        }, 7000);
+
+        window[cbName] = (response) => {
+          cleanup();
+          if (!response || response.status === 'error') {
+            reject(new Error(response?.errors?.[0]?.detailed_message || '시트를 읽지 못했습니다.'));
+            return;
+          }
+          resolve(response);
+        };
+
+        const url = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(spreadsheetId)}/gviz/tq?tqx=responseHandler:${cbName}&sheet=${encodeURIComponent(sheetName)}&headers=0`;
+        script.src = url;
+        script.onerror = () => {
+          cleanup();
+          reject(new Error('시트 접근 불가 (공유 설정 확인 필요)'));
+        };
+        document.head.appendChild(script);
+      });
+    }
+
+    function gvizToMatrix(response) {
+      const rows = response?.table?.rows || [];
+      return rows.map(row => {
+        const cols = row?.c || [];
+        return cols.map(cell => {
+          if (!cell) return '';
+          const val = (cell.f !== undefined && cell.f !== null) ? cell.f : cell.v;
+          return val === null || val === undefined ? '' : String(val).trim();
+        });
+      });
+    }
+
+    function parseMatrixToSheetData(matrix, sheetName, source = 'google') {
+      const title = (matrix[0] && matrix[0][0]) ? matrix[0][0] : `내부심사 체크리스트 (${sheetName})`;
+      const meta = {
+        date: getTodayISO(),
+        auditType: '정기심사',
+        department: '',
+        auditor: '',
+        auditee: '',
+        note: ''
+      };
+
+      // 헤더(평가 주안점 / 적합) 행 위치 탐색
+      let headerEndIdx = -1;
+      for (let r = 0; r < Math.min(matrix.length, 15); r++) {
+        const row = matrix[r] || [];
+        const joined = row.join(' ').replace(/\s+/g, '');
+        if (joined.includes('평가주안점') || (row[3] && row[3].includes('적합'))) {
+          headerEndIdx = r;
+          break;
+        }
+      }
+      if (headerEndIdx === -1) headerEndIdx = 6;
+
+      // 상단 메타정보 추출
+      for (let r = 1; r < headerEndIdx; r++) {
+        const row = matrix[r] || [];
+        const leftLabel = (row[0] || '').replace(/\s+/g, '');
+        const leftVal = (row[1] || '').trim();
+        const rightLabel = (row[3] || '').replace(/\s+/g, '');
+        const rightVal = (row[5] || '').trim();
+
+        if (leftLabel.includes('심사구분') && leftVal) {
+          meta.auditType = leftVal.includes('특별') ? '특별심사' : '정기심사';
+        }
+        if (leftLabel.includes('대상부서') && leftVal) {
+          meta.department = leftVal;
+        }
+        if (rightLabel.includes('심사원') && !rightLabel.includes('피심사원') && rightVal) {
+          meta.auditor = rightVal;
+        }
+        if (rightLabel.includes('피심사원') && rightVal) {
+          meta.auditee = rightVal;
+        }
+        if (rightLabel.includes('비고') && rightVal) {
+          meta.note = rightVal;
+        }
+      }
+
+      // 체크리스트 항목 추출 (심사결과 기본값: '적합')
+      const items = [];
+      let currentCategory = '';
+      for (let r = headerEndIdx + 1; r < matrix.length; r++) {
+        const row = matrix[r] || [];
+        const cat = (row[0] || '').trim();
+        const no = (row[1] || '').trim();
+        const text = (row[2] || '').trim();
+        const note = (row[6] || '').trim();
+
+        const catClean = cat.replace(/\s+/g, '');
+        if (catClean.includes('합계') || catClean.includes('적합률')) break;
+
+        if (cat) currentCategory = cat;
+        if (!text) continue;
+
+        items.push({
+          idx: items.length,
+          category: currentCategory || '기타',
+          no: no || String(items.length + 1),
+          text,
+          result: '적합',
+          note
+        });
+      }
+
+      return { title, meta, items, source };
+    }
+
+    function loadEmbeddedSheet(sheetName) {
+      const templates = buildEmbeddedTemplates();
+      const tpl = templates[sheetName] || templates[DEFAULT_SHEET_NAMES[0]];
+      return {
+        title: tpl.title,
+        meta: {
+          date: getTodayISO(),
+          auditType: '정기심사',
+          department: tpl.defaultDept || '',
+          auditor: '',
+          auditee: '',
+          note: ''
+        },
+        items: tpl.items.map(it => ({ ...it })),
+        source: 'embedded'
+      };
+    }
+
+    async function loadSheet(sheetName, forceRefresh = false) {
+      state.currentSheet = sheetName;
+      state.resultFilter = 'ALL';
+      state.categoryFilter = 'ALL';
+      renderTabs();
+
+      if (!forceRefresh && state.sheetsData[sheetName]) {
+        updateSourceBadge(state.sheetsData[sheetName].source);
+        if (state.sheetsData[sheetName].source === 'google') hideStatusBanner();
+        renderAll();
+        return;
+      }
+
+      const spreadsheetId = extractSpreadsheetId(state.sheetUrl);
+      showLoading(`'${sheetName}' 양식을 불러오는 중...`);
+
+      try {
+        if (!spreadsheetId) throw new Error('유효한 구글 시트 링크가 아닙니다.');
+        const response = await fetchGoogleSheetJSONP(spreadsheetId, sheetName);
+        const matrix = gvizToMatrix(response);
+        const parsed = parseMatrixToSheetData(matrix, sheetName, 'google');
+        if (!parsed.items.length) throw new Error('항목 데이터가 비어 있습니다.');
+
+        state.sheetsData[sheetName] = parsed;
+        updateSourceBadge('google');
+        hideStatusBanner();
+        renderAll();
+        if (forceRefresh) showToast('구글 스프레드시트와 동기화되었습니다.', 'success');
+      } catch (err) {
+        // 구글 시트 접근 불가 시 내장된 최신 양식으로 자동 폴백 (Canvas 미리보기 즉시 동작 보장)
+        console.warn('Google Sheet fetch fallback:', err.message);
+        const fallbackData = loadEmbeddedSheet(sheetName);
+        state.sheetsData[sheetName] = fallbackData;
+        updateSourceBadge('embedded');
+        setStatusBanner(
+          `<div class="flex items-start justify-between gap-2">
+            <div>
+              <strong>내장 양식으로 로드되었습니다.</strong><br/>
+              구글 시트를 실시간 연동하려면 스프레드시트 <strong>[공유 → 링크가 있는 모든 사용자(뷰어)]</strong>로 설정 후 상단 새로고침을 눌러주세요.
+            </div>
+          </div>`,
+          'warning'
+        );
+        renderAll();
+      } finally {
+        hideLoading();
+      }
+    }
+
+    /**********************************************************************
+     * 5. 로컬 .xlsx 양식 파일 직접 불러오기
+     **********************************************************************/
+    function extractExcelCellText(cell) {
+      if (!cell || cell.value === null || cell.value === undefined) return '';
+      const v = cell.value;
+      if (typeof v === 'object') {
+        if (v.richText) return v.richText.map(rt => rt.text).join('').trim();
+        if (v.result !== undefined && v.result !== null) return String(v.result).trim();
+        if (v.text) return String(v.text).trim();
+        if (v instanceof Date) return v.toISOString().slice(0, 10);
+        return '';
+      }
+      return String(v).trim();
+    }
+
+    async function handleLocalExcelUpload(file) {
+      showLoading('로컬 .xlsx 파일을 읽는 중...');
+      try {
+        const buffer = await file.arrayBuffer();
+        const wb = new ExcelJS.Workbook();
+        await wb.xlsx.load(buffer);
+
+        const loadedNames = [];
+        wb.eachSheet((ws) => {
+          const matrix = [];
+          ws.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+            const rowArr = [];
+            for (let c = 1; c <= 7; c++) {
+              rowArr.push(extractExcelCellText(row.getCell(c)));
+            }
+            matrix[rowNumber - 1] = rowArr;
+          });
+          const parsed = parseMatrixToSheetData(matrix, ws.name, 'local');
+          if (parsed.items.length > 0) {
+            state.sheetsData[ws.name] = parsed;
+            loadedNames.push(ws.name);
+          }
+        });
+
+        if (loadedNames.length === 0) {
+          throw new Error('체크리스트 형식의 시트를 찾지 못했습니다.');
+        }
+
+        state.sheetNames = loadedNames;
+        state.currentSheet = loadedNames[0];
+        state.resultFilter = 'ALL';
+        state.categoryFilter = 'ALL';
+        updateSourceBadge('local');
+        hideStatusBanner();
+        renderTabs();
+        renderAll();
+        closeSettingsModal();
+        showToast(`${loadedNames.length}개 시트를 불러왔습니다.`, 'success');
+      } catch (err) {
+        showToast('파일 읽기 오류: ' + err.message, 'error');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    /**********************************************************************
+     * 6. 화면 렌더링 로직
+     **********************************************************************/
+    function renderTabs() {
+      const container = document.getElementById('sheetTabs');
+      container.innerHTML = state.sheetNames.map(name => {
+        const isActive = name === state.currentSheet;
+        return `
+          <button type="button" data-sheet="${escapeHtml(name)}"
+            class="sheet-tab shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap border ${
+              isActive
+                ? 'bg-white text-navy-800 border-white shadow-sm'
+                : 'bg-white/10 text-blue-100 border-white/20 hover:bg-white/20'
+            }">
+            ${escapeHtml(name)}
+          </button>
+        `;
+      }).join('');
+
+      container.querySelectorAll('.sheet-tab').forEach(btn => {
+        btn.addEventListener('click', () => loadSheet(btn.dataset.sheet));
+      });
+    }
+
+    function renderMeta() {
+      const data = state.sheetsData[state.currentSheet];
+      if (!data) return;
+      const m = data.meta;
+
+      document.getElementById('metaDate').value = m.date || '';
+      document.getElementById('metaDept').value = m.department || '';
+      document.getElementById('metaAuditor').value = m.auditor || '';
+      document.getElementById('metaAuditee').value = m.auditee || '';
+      document.getElementById('metaNote').value = m.note || '';
+
+      document.querySelectorAll('[data-audit-type]').forEach(btn => {
+        const active = btn.dataset.auditType === m.auditType;
+        btn.className = active
+          ? 'seg-btn rounded-xl border text-xs font-bold transition bg-navy-800 border-navy-800 text-white'
+          : 'seg-btn rounded-xl border text-xs font-bold transition bg-slate-50 border-slate-300 text-slate-600';
+      });
+
+      updateMetaSummary();
+    }
+
+    function updateMetaSummary() {
+      const data = state.sheetsData[state.currentSheet];
+      if (!data) return;
+      const m = data.meta;
+      const deptText = m.department ? m.department : '대상 부서 미입력';
+      const dateText = m.date ? m.date : '일자 미입력';
+      document.getElementById('metaSummary').textContent = `${deptText} · ${dateText} · ${m.auditType}`;
+      document.getElementById('filenamePreview').textContent = getExportFileName();
+    }
+
+    function computeStats(items) {
+      let pass = 0, fail = 0, na = 0;
+      items.forEach(it => {
+        if (it.result === '적합') pass++;
+        else if (it.result === '부적합, 관찰') fail++;
+        else if (it.result === '해당없음') na++;
+      });
+      const evaluated = pass + fail;
+      const rate = evaluated > 0 ? (pass / evaluated) * 100 : 0;
+      return { pass, fail, na, total: items.length, evaluated, rate };
+    }
+
+    function renderStats() {
+      const data = state.sheetsData[state.currentSheet];
+      if (!data) return;
+      const s = computeStats(data.items);
+
+      document.getElementById('statPass').textContent = s.pass;
+      document.getElementById('statFail').textContent = s.fail;
+      document.getElementById('statNa').textContent = s.na;
+      document.getElementById('statRate').textContent = `${s.rate.toFixed(1)}%`;
+
+      document.querySelectorAll('.stat-pill').forEach(pill => {
+        const active = pill.dataset.filter === state.resultFilter && state.resultFilter !== 'ALL';
+        pill.classList.toggle('ring-2', active);
+        pill.classList.toggle('ring-navy-800', active);
+        pill.classList.toggle('bg-blue-50', active);
+        pill.classList.toggle('bg-slate-50', !active);
+      });
+    }
+
+    function renderCategoryDropdown() {
+      const data = state.sheetsData[state.currentSheet];
+      const select = document.getElementById('categoryFilter');
+      if (!data) return;
+
+      const categories = [];
+      data.items.forEach(it => {
+        if (!categories.includes(it.category)) categories.push(it.category);
+      });
+
+      select.innerHTML = `<option value="ALL">전체 관련표준 (${data.items.length}항목)</option>` +
+        categories.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('');
+      select.value = state.categoryFilter;
+    }
+
+    function getResultButtonClass(btnRes, currentRes) {
+      const base = 'res-btn min-h-[42px] px-1.5 py-1.5 rounded-xl border text-xs font-bold transition active:scale-[0.97] ';
+      if (btnRes !== currentRes) {
+        return base + 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100';
+      }
+      if (btnRes === '적합') return base + 'bg-emerald-50 border-emerald-600 text-emerald-700 ring-1 ring-emerald-600/20';
+      if (btnRes === '부적합, 관찰') return base + 'bg-rose-50 border-rose-600 text-rose-700 ring-1 ring-rose-600/20';
+      return base + 'bg-slate-200 border-slate-500 text-slate-700 ring-1 ring-slate-500/20';
+    }
+
+    function getCardBorderClass(res) {
+      if (res === '부적합, 관찰') return 'border-l-rose-600 bg-rose-50/20';
+      if (res === '해당없음') return 'border-l-slate-400 opacity-85';
+      return 'border-l-emerald-600 bg-white';
+    }
+
+    function renderChecklist() {
+      const data = state.sheetsData[state.currentSheet];
+      const container = document.getElementById('checklistContainer');
+      if (!data) return;
+
+      const filtered = data.items.filter(it => {
+        if (state.resultFilter !== 'ALL' && it.result !== state.resultFilter) return false;
+        if (state.categoryFilter !== 'ALL' && it.category !== state.categoryFilter) return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-sm text-slate-500">
+            선택한 필터 조건에 해당하는 항목이 없습니다.
+          </div>
+        `;
+        return;
+      }
+
+      // 관련표준별 그룹핑
+      const groups = [];
+      const groupMap = new Map();
+      filtered.forEach(it => {
+        if (!groupMap.has(it.category)) {
+          const grp = { category: it.category, items: [] };
+          groupMap.set(it.category, grp);
+          groups.push(grp);
+        }
+        groupMap.get(it.category).items.push(it);
+      });
+
+      let html = '';
+      groups.forEach(grp => {
+        html += `
+          <div class="pt-2 first:pt-0">
+            <div class="bg-slate-200/85 text-slate-800 px-3.5 py-2 rounded-xl flex items-center justify-between mb-2">
+              <span class="text-xs font-extrabold tracking-tight">${escapeHtml(grp.category)}</span>
+              <span class="text-[11px] font-bold text-slate-500 shrink-0 ml-2">${grp.items.length}개</span>
+            </div>
+            <div class="space-y-2.5">
+        `;
+
+        grp.items.forEach(item => {
+          html += `
+            <article class="item-card rounded-2xl border border-slate-200 border-l-4 p-3.5 shadow-sm transition ${getCardBorderClass(item.result)}" data-idx="${item.idx}">
+              <div class="flex items-start gap-2 mb-3">
+                <span class="shrink-0 px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-extrabold mt-0.5">
+                  NO.${escapeHtml(item.no)}
+                </span>
+                <p class="text-[13.5px] font-medium text-slate-900 leading-snug whitespace-pre-line break-keep">
+                  ${escapeHtml(item.text)}
+                </p>
+              </div>
+
+              <div class="grid grid-cols-[1fr_1.2fr_1fr] gap-1.5 mb-2.5">
+                <button type="button" data-idx="${item.idx}" data-res="적합" class="${getResultButtonClass('적합', item.result)}">적합</button>
+                <button type="button" data-idx="${item.idx}" data-res="부적합, 관찰" class="${getResultButtonClass('부적합, 관찰', item.result)}">부적합, 관찰</button>
+                <button type="button" data-idx="${item.idx}" data-res="해당없음" class="${getResultButtonClass('해당없음', item.result)}">해당없음</button>
+              </div>
+
+              <textarea rows="1" data-idx="${item.idx}" placeholder="항목별 비고 / 시정조치 내용 입력..."
+                class="item-note w-full px-3 py-2 rounded-xl border text-xs text-slate-800 resize-y min-h-[38px] focus:outline-none focus:ring-2 focus:ring-navy-800/15 focus:border-navy-800 ${
+                  item.result === '부적합, 관찰' ? 'border-rose-300 bg-white' : 'border-slate-200 bg-slate-50/70 focus:bg-white'
+                }">${escapeHtml(item.note)}</textarea>
+            </article>
+          `;
+        });
+
+        html += `</div></div>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function renderAll() {
+      renderMeta();
+      renderStats();
+      renderCategoryDropdown();
+      renderChecklist();
+    }
+
+    /**********************************************************************
+     * 7. Excel (.xlsx) 파일 생성 및 저장 (A4 세로 출력 규격)
+     **********************************************************************/
+    function applyBorderRange(ws, r1, c1, r2, c2) {
+      const border = {
+        top: { style: 'thin', color: { argb: 'FF475569' } },
+        left: { style: 'thin', color: { argb: 'FF475569' } },
+        bottom: { style: 'thin', color: { argb: 'FF475569' } },
+        right: { style: 'thin', color: { argb: 'FF475569' } }
+      };
+      for (let r = r1; r <= r2; r++) {
+        for (let c = c1; c <= c2; c++) {
+          ws.getCell(r, c).border = border;
+        }
+      }
+    }
+
+    async function checkDepartmentBeforeExport(ext) {
+      const data = state.sheetsData[state.currentSheet];
+      if (!data || !data.items.length) {
+        showToast('저장할 체크리스트 데이터가 없습니다.', 'error');
+        return false;
+      }
+      if (!data.meta.department.trim()) {
+        const ok = await openDialog({
+          title: '대상 부서 미입력',
+          message: `대상 부서가 비어 있습니다.\n"내부심사 체크리스트_미지정.${ext}" 파일명으로 저장하시겠습니까?`,
+          confirmText: '그대로 저장',
+          cancelText: '부서 입력하기'
+        });
+        if (!ok) {
+          if (state.metaCollapsed) toggleMetaSection();
+          document.getElementById('metaDept').focus();
+          return false;
+        }
+      }
+      return true;
+    }
+
+    async function exportExcel() {
+      if (!(await checkDepartmentBeforeExport('xlsx'))) return;
+      const data = state.sheetsData[state.currentSheet];
+
+      showLoading('A4 인쇄 규격 Excel 파일을 생성하는 중...');
+      try {
+        const wb = new ExcelJS.Workbook();
+        const safeTabName = state.currentSheet.replace(/[\\/*?:[\]]/g, '').slice(0, 31) || '내부심사 체크리스트';
+        const ws = wb.addWorksheet(safeTabName, {
+          pageSetup: {
+            paperSize: 9, // A4
+            orientation: 'portrait',
+            fitToPage: true,
+            fitToWidth: 1,
+            fitToHeight: 0,
+            margins: { left: 0.35, right: 0.35, top: 0.45, bottom: 0.45, header: 0.2, footer: 0.2 }
+          }
+        });
+
+        ws.columns = [
+          { width: 17 },   // A: 관련표준
+          { width: 5.5 },  // B: NO
+          { width: 46 },   // C: 심사항목
+          { width: 7.5 },  // D: 적합
+          { width: 11.5 }, // E: 부적합, 관찰
+          { width: 8.5 },  // F: 해당없음
+          { width: 20 }    // G: 비고
+        ];
+
+        const fontBase = { name: '맑은 고딕', size: 9.5 };
+        const fontBold = { name: '맑은 고딕', size: 9.5, bold: true };
+        const fillHeader = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } };
+        const fillSub = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
+
+        // 1행: 제목
+        ws.mergeCells('A1:G1');
+        ws.getRow(1).height = 30;
+        const titleCell = ws.getCell('A1');
+        titleCell.value = data.title;
+        titleCell.font = { name: '맑은 고딕', size: 14, bold: true, color: { argb: 'FF0F172A' } };
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        titleCell.fill = fillHeader;
+        applyBorderRange(ws, 1, 1, 1, 7);
+
+        // 2~4행: 상단 메타정보
+        const metaRows = [
+          ['심사 일자', formatKoreanDate(data.meta.date), '심사원', data.meta.auditor],
+          ['심사 구분', data.meta.auditType, '피심사원', data.meta.auditee],
+          ['대상 부서', data.meta.department, '비  고', data.meta.note]
+        ];
+        metaRows.forEach((mr, i) => {
+          const r = 2 + i;
+          ws.getRow(r).height = 22;
+          ws.mergeCells(r, 2, r, 3);
+          ws.mergeCells(r, 4, r, 5);
+          ws.mergeCells(r, 6, r, 7);
+
+          ws.getCell(r, 1).value = mr[0];
+          ws.getCell(r, 1).font = fontBold;
+          ws.getCell(r, 1).fill = fillSub;
+          ws.getCell(r, 1).alignment = { horizontal: 'center', vertical: 'middle' };
+
+          ws.getCell(r, 2).value = mr[1];
+          ws.getCell(r, 2).font = fontBase;
+          ws.getCell(r, 2).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+
+          ws.getCell(r, 4).value = mr[2];
+          ws.getCell(r, 4).font = fontBold;
+          ws.getCell(r, 4).fill = fillSub;
+          ws.getCell(r, 4).alignment = { horizontal: 'center', vertical: 'middle' };
+
+          ws.getCell(r, 6).value = mr[3];
+          ws.getCell(r, 6).font = fontBase;
+          ws.getCell(r, 6).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+
+          applyBorderRange(ws, r, 1, r, 7);
+        });
+
+        ws.getRow(5).height = 8;
+
+        // 6~7행: 테이블 헤더
+        ws.mergeCells('A6:A7');
+        ws.mergeCells('B6:B7');
+        ws.mergeCells('D6:F6');
+        ws.mergeCells('G6:G7');
+        ws.getRow(6).height = 20;
+        ws.getRow(7).height = 22;
+
+        const headerMap = [
+          ['A6', '관련표준'], ['B6', 'NO'], ['C6', '심사항목'],
+          ['D6', '심사결과'], ['G6', '비고'],
+          ['C7', '평가 주안점'], ['D7', '적합'], ['E7', '부적합, 관찰'], ['F7', '해당없음']
+        ];
+        headerMap.forEach(([addr, text]) => {
+          const cell = ws.getCell(addr);
+          cell.value = text;
+          cell.font = fontBold;
+          cell.fill = fillHeader;
+          cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        });
+        applyBorderRange(ws, 6, 1, 7, 7);
+
+        // 8행~: 본문 항목
+        const startRow = 8;
+        let catStartRow = startRow;
+        let prevCat = '';
+
+        data.items.forEach((item, idx) => {
+          const r = startRow + idx;
+          const trimmedNote = (item.note || '').trim();
+          const isPassEmptyNote = item.result === '적합' && trimmedNote === '';
+
+          ws.getCell(r, 1).value = item.category;
+          ws.getCell(r, 2).value = isNaN(Number(item.no)) ? item.no : Number(item.no);
+          ws.getCell(r, 3).value = item.text;
+          ws.getCell(r, 4).value = item.result === '적합' ? '✔' : '';
+          ws.getCell(r, 5).value = item.result === '부적합, 관찰' ? '✔' : '';
+          ws.getCell(r, 6).value = item.result === '해당없음' ? '✔' : '';
+          ws.getCell(r, 7).value = isPassEmptyNote ? '-' : (item.note || '');
+
+          ws.getCell(r, 1).font = fontBold;
+          ws.getCell(r, 1).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+          ws.getCell(r, 2).font = fontBase;
+          ws.getCell(r, 2).alignment = { horizontal: 'center', vertical: 'middle' };
+          ws.getCell(r, 3).font = fontBase;
+          ws.getCell(r, 3).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+
+          [4, 5, 6].forEach(col => {
+            const c = ws.getCell(r, col);
+            c.font = {
+              name: '맑은 고딕', size: 11, bold: true,
+              color: { argb: col === 4 ? 'FF15803D' : col === 5 ? 'FFB91C1C' : 'FF475569' }
+            };
+            c.alignment = { horizontal: 'center', vertical: 'middle' };
+          });
+
+          ws.getCell(r, 7).font = fontBase;
+          ws.getCell(r, 7).alignment = {
+            horizontal: isPassEmptyNote ? 'center' : 'left',
+            vertical: 'middle',
+            wrapText: true
+          };
+
+          const textLines = item.text.split('\n').reduce((acc, line) => acc + Math.max(1, Math.ceil(line.length / 28)), 0);
+          const noteLines = (item.note || '').split('\n').reduce((acc, line) => acc + Math.max(1, Math.ceil(line.length / 12)), 0);
+          ws.getRow(r).height = Math.max(24, Math.max(textLines, noteLines) * 15 + 6);
+
+          applyBorderRange(ws, r, 1, r, 7);
+
+          if (idx === 0) {
+            prevCat = item.category;
+            catStartRow = r;
+          } else if (item.category !== prevCat) {
+            if (r - 1 > catStartRow) ws.mergeCells(catStartRow, 1, r - 1, 1);
+            prevCat = item.category;
+            catStartRow = r;
+          }
+          if (idx === data.items.length - 1 && r > catStartRow) {
+            ws.mergeCells(catStartRow, 1, r, 1);
+          }
+        });
+
+        // 하단 합계 및 적합률
+        const lastDataRow = startRow + data.items.length - 1;
+        const sumRow = lastDataRow + 1;
+        const rateRow = lastDataRow + 2;
+        const stats = computeStats(data.items);
+
+        ws.mergeCells(sumRow, 1, sumRow, 3);
+        ws.getRow(sumRow).height = 24;
+        ws.getCell(sumRow, 1).value = '합  계';
+        ws.getCell(sumRow, 4).value = { formula: `COUNTIF(D${startRow}:D${lastDataRow},"✔")`, result: stats.pass };
+        ws.getCell(sumRow, 5).value = { formula: `COUNTIF(E${startRow}:E${lastDataRow},"✔")`, result: stats.fail };
+        ws.getCell(sumRow, 6).value = { formula: `COUNTIF(F${startRow}:F${lastDataRow},"✔")`, result: stats.na };
+        ws.getCell(sumRow, 7).value = `총 ${stats.total}항목 (평가 ${stats.evaluated}건)`;
+
+        for (let c = 1; c <= 7; c++) {
+          const cell = ws.getCell(sumRow, c);
+          cell.font = fontBold;
+          cell.fill = fillSub;
+          cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        }
+        applyBorderRange(ws, sumRow, 1, sumRow, 7);
+
+        ws.mergeCells(rateRow, 1, rateRow, 3);
+        ws.mergeCells(rateRow, 4, rateRow, 7);
+        ws.getRow(rateRow).height = 24;
+        ws.getCell(rateRow, 1).value = `적 합 률 (적합 / 평가대상 ${stats.evaluated}항목)`;
+        ws.getCell(rateRow, 4).value = {
+          formula: `IF((D${sumRow}+E${sumRow})>0, D${sumRow}/(D${sumRow}+E${sumRow}), 0)`,
+          result: stats.evaluated > 0 ? stats.pass / stats.evaluated : 0
+        };
+        ws.getCell(rateRow, 4).numFmt = '0.0%';
+
+        for (let c = 1; c <= 7; c++) {
+          const cell = ws.getCell(rateRow, c);
+          cell.font = fontBold;
+          cell.fill = fillHeader;
+          cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        }
+        applyBorderRange(ws, rateRow, 1, rateRow, 7);
+
+        ws.pageSetup.printTitlesRow = '6:7';
+
+        const buffer = await wb.xlsx.writeBuffer();
+        const blob = new Blob([buffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${getExportFileName()}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        showToast(`${getExportFileName()}.xlsx 저장 완료`, 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('Excel 생성 오류: ' + err.message, 'error');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    /**********************************************************************
+     * 8. A4 출력 양식 미리보기 HTML 빌더
+     **********************************************************************/
+    function buildPdfHtml(data) {
+      const stats = computeStats(data.items);
+      const rowSpans = new Array(data.items.length).fill(0);
+      let i = 0;
+      while (i < data.items.length) {
+        let j = i + 1;
+        while (j < data.items.length && data.items[j].category === data.items[i].category) j++;
+        rowSpans[i] = j - i;
+        i = j;
+      }
+
+      const rowsHtml = data.items.map((item, idx) => {
+        const catTd = rowSpans[idx] > 0
+          ? `<td rowspan="${rowSpans[idx]}" class="pdf-center" style="font-weight:700; background:#fafafa;">${escapeHtml(item.category)}</td>`
+          : '';
+        const trimmedNote = (item.note || '').trim();
+        const isPassEmptyNote = item.result === '적합' && trimmedNote === '';
+        const noteDisplay = isPassEmptyNote ? '-' : item.note;
+        const noteAlignClass = isPassEmptyNote ? 'pdf-center' : 'pdf-left';
+
+        return `
+          <tr>
+            ${catTd}
+            <td class="pdf-center">${escapeHtml(item.no)}</td>
+            <td class="pdf-left">${escapeHtml(item.text)}</td>
+            <td class="pdf-center pdf-mark pdf-mark-pass">${item.result === '적합' ? '✔' : ''}</td>
+            <td class="pdf-center pdf-mark pdf-mark-fail">${item.result === '부적합, 관찰' ? '✔' : ''}</td>
+            <td class="pdf-center pdf-mark pdf-mark-na">${item.result === '해당없음' ? '✔' : ''}</td>
+            <td class="${noteAlignClass}">${escapeHtml(noteDisplay)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      return `
+        <div class="pdf-wrapper shadow-md">
+          <div class="pdf-title">${escapeHtml(data.title)}</div>
+
+          <table class="pdf-table">
+            <colgroup>
+              <col style="width:15%">
+              <col style="width:35%">
+              <col style="width:15%">
+              <col style="width:35%">
+            </colgroup>
+            <tr>
+              <th>심사 일자</th>
+              <td class="pdf-center">${escapeHtml(formatKoreanDate(data.meta.date))}</td>
+              <th>심사원</th>
+              <td class="pdf-center">${escapeHtml(data.meta.auditor)}</td>
+            </tr>
+            <tr>
+              <th>심사 구분</th>
+              <td class="pdf-center">${escapeHtml(data.meta.auditType)}</td>
+              <th>피심사원</th>
+              <td class="pdf-center">${escapeHtml(data.meta.auditee)}</td>
+            </tr>
+            <tr>
+              <th>대상 부서</th>
+              <td class="pdf-center">${escapeHtml(data.meta.department)}</td>
+              <th>비 고</th>
+              <td class="pdf-center">${escapeHtml(data.meta.note)}</td>
+            </tr>
+          </table>
+
+          <table class="pdf-table">
+            <colgroup>
+              <col style="width:15%">
+              <col style="width:5%">
+              <col style="width:41%">
+              <col style="width:6.5%">
+              <col style="width:9.5%">
+              <col style="width:7%">
+              <col style="width:16%">
+            </colgroup>
+            <thead>
+              <tr>
+                <th rowspan="2">관련표준</th>
+                <th rowspan="2">NO</th>
+                <th>심사항목</th>
+                <th colspan="3">심사결과</th>
+                <th rowspan="2">비고</th>
+              </tr>
+              <tr>
+                <th>평가 주안점</th>
+                <th>적합</th>
+                <th>부적합, 관찰</th>
+                <th>해당없음</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+              <tr class="pdf-summary-row">
+                <td colspan="3" class="pdf-center">합 계</td>
+                <td class="pdf-center">${stats.pass}</td>
+                <td class="pdf-center">${stats.fail}</td>
+                <td class="pdf-center">${stats.na}</td>
+                <td class="pdf-center">총 ${stats.total}항목</td>
+              </tr>
+              <tr class="pdf-summary-row">
+                <td colspan="3" class="pdf-center">적 합 률 (적합 / 평가대상 ${stats.evaluated}항목)</td>
+                <td colspan="4" class="pdf-center" style="font-size:11.5px; color:#1e3a5f;">
+                  ${stats.rate.toFixed(1)}% (해당없음 ${stats.na}건 제외)
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    /**********************************************************************
+     * 9. 모달 제어 및 이벤트 바인딩
+     **********************************************************************/
+    function toggleMetaSection() {
+      state.metaCollapsed = !state.metaCollapsed;
+      document.getElementById('metaBody').classList.toggle('hidden', state.metaCollapsed);
+      document.getElementById('metaToggleIcon').textContent = state.metaCollapsed ? '펼치기 ▼' : '접기 ▲';
+    }
+
+    function openSettingsModal() {
+      document.getElementById('sheetUrlInput').value = state.sheetUrl;
+      const modal = document.getElementById('settingsModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeSettingsModal() {
+      const modal = document.getElementById('settingsModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function openPreviewModal() {
+      const data = state.sheetsData[state.currentSheet];
+      if (!data) return;
+      document.getElementById('previewFileLabel').textContent = `파일명: ${getExportFileName()}`;
+      document.getElementById('previewBody').innerHTML = buildPdfHtml(data);
+      const modal = document.getElementById('previewModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closePreviewModal() {
+      const modal = document.getElementById('previewModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function initEvents() {
+      // 기본 정보 접기/펼치기
+      document.getElementById('metaToggle').addEventListener('click', toggleMetaSection);
+
+      // 기본 정보 입력 실시간 반영
+      const bindMetaInput = (id, key) => {
+        document.getElementById(id).addEventListener('input', (e) => {
+          const data = state.sheetsData[state.currentSheet];
+          if (!data) return;
+          data.meta[key] = e.target.value;
+          updateMetaSummary();
+        });
+      };
+      bindMetaInput('metaDate', 'date');
+      bindMetaInput('metaDept', 'department');
+      bindMetaInput('metaAuditor', 'auditor');
+      bindMetaInput('metaAuditee', 'auditee');
+      bindMetaInput('metaNote', 'note');
+
+      // 심사 구분 토글
+      document.querySelectorAll('[data-audit-type]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const data = state.sheetsData[state.currentSheet];
+          if (!data) return;
+          data.meta.auditType = btn.dataset.auditType;
+          renderMeta();
+        });
+      });
+
+      // 상단 요약 바 필터
+      document.querySelectorAll('.stat-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          const target = pill.dataset.filter;
+          state.resultFilter = (state.resultFilter === target || target === 'ALL') ? 'ALL' : target;
+          renderStats();
+          renderChecklist();
+        });
+      });
+
+      // 관련표준 드롭다운 필터
+      document.getElementById('categoryFilter').addEventListener('change', (e) => {
+        state.categoryFilter = e.target.value;
+        renderChecklist();
+      });
+
+      // 체크리스트 카드 내 결과 버튼 & 비고 입력 (이벤트 위임)
+      const checklistEl = document.getElementById('checklistContainer');
+
+      checklistEl.addEventListener('click', (e) => {
+        const btn = e.target.closest('.res-btn');
+        if (!btn) return;
+        const data = state.sheetsData[state.currentSheet];
+        if (!data) return;
+
+        const idx = Number(btn.dataset.idx);
+        const res = btn.dataset.res;
+        data.items[idx].result = res;
+
+        // 현재 카드만 즉시 업데이트하여 모바일 스크롤 위치 유지
+        const card = btn.closest('.item-card');
+        card.className = `item-card rounded-2xl border border-slate-200 border-l-4 p-3.5 shadow-sm transition ${getCardBorderClass(res)}`;
+        card.querySelectorAll('.res-btn').forEach(b => {
+          b.className = getResultButtonClass(b.dataset.res, res);
+        });
+        const noteEl = card.querySelector('.item-note');
+        noteEl.className = `item-note w-full px-3 py-2 rounded-xl border text-xs text-slate-800 resize-y min-h-[38px] focus:outline-none focus:ring-2 focus:ring-navy-800/15 focus:border-navy-800 ${
+          res === '부적합, 관찰' ? 'border-rose-300 bg-white' : 'border-slate-200 bg-slate-50/70 focus:bg-white'
+        }`;
+
+        renderStats();
+      });
+
+      checklistEl.addEventListener('input', (e) => {
+        if (!e.target.classList.contains('item-note')) return;
+        const data = state.sheetsData[state.currentSheet];
+        if (!data) return;
+        const idx = Number(e.target.dataset.idx);
+        data.items[idx].note = e.target.value;
+      });
+
+      // 현재 시트 초기화
+      document.getElementById('btnResetSheet').addEventListener('click', async () => {
+        const data = state.sheetsData[state.currentSheet];
+        if (!data) return;
+        const ok = await openDialog({
+          title: '체크리스트 초기화',
+          message: `'${state.currentSheet}'의 모든 심사결과를 '적합'으로 되돌리고 입력한 비고 및 기본 정보를 초기화할까요?`,
+          confirmText: '초기화',
+          cancelText: '취소',
+          danger: true
+        });
+        if (!ok) return;
+
+        data.items.forEach(it => {
+          it.result = '적합';
+          it.note = '';
+        });
+        data.meta.auditor = '';
+        data.meta.auditee = '';
+        data.meta.note = '';
+        data.meta.date = getTodayISO();
+        data.meta.auditType = '정기심사';
+        renderAll();
+        showToast('현재 시트가 초기화되었습니다.', 'info');
+      });
+
+      // 상단 버튼들
+      document.getElementById('btnReload').addEventListener('click', () => loadSheet(state.currentSheet, true));
+      document.getElementById('btnSettings').addEventListener('click', openSettingsModal);
+      document.getElementById('btnCloseSettings').addEventListener('click', closeSettingsModal);
+      document.getElementById('settingsModal').addEventListener('click', (e) => {
+        if (e.target.id === 'settingsModal') closeSettingsModal();
+      });
+
+      // A4 미리보기 모달
+      document.getElementById('btnPreviewA4').addEventListener('click', openPreviewModal);
+      document.getElementById('btnClosePreview').addEventListener('click', closePreviewModal);
+      document.getElementById('previewModal').addEventListener('click', (e) => {
+        if (e.target.id === 'previewModal') closePreviewModal();
+      });
+      document.getElementById('btnPreviewExcel').addEventListener('click', () => {
+        closePreviewModal();
+        exportExcel();
+      });
+
+      // 설정: 구글 시트 링크 적용
+      document.getElementById('btnApplyUrl').addEventListener('click', () => {
+        const newUrl = document.getElementById('sheetUrlInput').value.trim();
+        if (!extractSpreadsheetId(newUrl)) {
+          showToast('올바른 구글 스프레드시트 링크를 입력해 주세요.', 'error');
+          return;
+        }
+        state.sheetUrl = newUrl;
+        state.sheetNames = [...DEFAULT_SHEET_NAMES];
+        state.sheetsData = {};
+        closeSettingsModal();
+        loadSheet(state.sheetNames[0], true);
+      });
+
+      // 설정: 로컬 .xlsx 불러오기
+      document.getElementById('btnLocalFile').addEventListener('click', () => {
+        document.getElementById('localFileInput').click();
+      });
+      document.getElementById('localFileInput').addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (file) handleLocalExcelUpload(file);
+        e.target.value = '';
+      });
+
+      // 설정: 내장 양식으로 전환
+      document.getElementById('btnUseEmbedded').addEventListener('click', () => {
+        state.sheetNames = [...DEFAULT_SHEET_NAMES];
+        state.sheetsData = {};
+        state.currentSheet = DEFAULT_SHEET_NAMES[0];
+        state.sheetsData[state.currentSheet] = loadEmbeddedSheet(state.currentSheet);
+        updateSourceBadge('embedded');
+        hideStatusBanner();
+        renderTabs();
+        renderAll();
+        closeSettingsModal();
+        showToast('내장 기본 체크리스트 양식으로 전환했습니다.', 'info');
+      });
+
+      // 하단 내보내기 버튼
+      document.getElementById('btnExportExcel').addEventListener('click', exportExcel);
+    }
+
+    // 앱 시작
+    window.addEventListener('DOMContentLoaded', () => {
+      initEvents();
+      loadSheet(state.currentSheet);
+    });
+  </script>
+</body>
+</html>
