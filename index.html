@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>내부심사 체크리스트</title>
+  <title>HCM 내부심사</title>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -96,6 +96,14 @@
       background: #f8fafc;
       font-weight: 700;
     }
+    .pdf-ncr-box {
+      text-align: left;
+      vertical-align: middle !important;
+      white-space: pre-line;
+      min-height: 140px;
+      padding: 8px 10px !important;
+      line-height: 1.55;
+    }
   </style>
 </head>
 <body class="bg-slate-200 text-slate-900 font-sans antialiased selection:bg-blue-100">
@@ -108,7 +116,7 @@
       <div class="px-4 pt-3.5 pb-2.5 flex items-center justify-between gap-2">
         <div class="min-w-0">
           <div class="flex items-center gap-2">
-            <h1 class="text-base font-bold tracking-tight truncate">내부심사 체크리스트</h1>
+            <h1 class="text-base font-bold tracking-tight truncate">HCM 내부심사</h1>
             <span id="sourceBadge" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/15 text-blue-100 whitespace-nowrap">
               연결 확인중
             </span>
@@ -169,95 +177,219 @@
       <!-- 상태 안내 배너 (구글 시트 공유 안내 등) -->
       <div id="statusBanner" class="hidden rounded-2xl p-3 text-xs leading-relaxed border"></div>
 
-      <!-- 기본 정보 입력 카드 (아코디언) -->
-      <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <button type="button" id="metaToggle"
-          class="w-full px-4 py-3 bg-slate-50/80 flex items-center justify-between text-left active:bg-slate-100 transition">
-          <div class="min-w-0 pr-2">
-            <div class="text-sm font-bold text-navy-800">기본 정보 입력</div>
-            <div id="metaSummary" class="text-xs text-slate-500 truncate mt-0.5">심사 일자, 대상 부서, 심사원 등을 입력하세요</div>
-          </div>
-          <span id="metaToggleIcon" class="shrink-0 text-xs font-bold text-slate-500 bg-slate-200/70 px-2.5 py-1 rounded-lg">
-            접기 ▲
-          </span>
-        </button>
+      <!-- [뷰 1] 내부심사 체크리스트 화면 -->
+      <div id="checklistView" class="space-y-3">
+        <!-- 기본 정보 입력 카드 (아코디언) -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <button type="button" id="metaToggle"
+            class="w-full px-4 py-3 bg-slate-50/80 hover:bg-slate-100/80 flex items-center justify-between text-left transition">
+            <div class="min-w-0 pr-2">
+              <div class="text-sm font-bold text-navy-800">기본 정보 입력</div>
+              <div id="metaSummary" class="text-xs text-slate-500 truncate mt-0.5">심사 일자, 대상 부서, 심사원 등을 입력하세요</div>
+            </div>
+            <span id="metaToggleIcon" class="text-xs font-bold text-slate-500 shrink-0">접기 ▲</span>
+          </button>
 
-        <div id="metaBody" class="p-4 border-t border-slate-200 grid grid-cols-2 gap-3">
-          <!-- 심사 일자 -->
-          <div class="flex flex-col gap-1">
-            <label for="metaDate" class="text-xs font-bold text-slate-700">심사 일자</label>
-            <input type="date" id="metaDate"
-              class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+          <div id="metaBody" class="p-4 border-t border-slate-100 grid grid-cols-2 gap-3">
+            <!-- 심사 일자 -->
+            <div class="flex flex-col gap-1">
+              <label for="metaDate" class="text-xs font-bold text-slate-700">심사 일자</label>
+              <input type="date" id="metaDate"
+                class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+            </div>
+
+            <!-- 심사 구분 -->
+            <div class="flex flex-col gap-1">
+              <span class="text-xs font-bold text-slate-700">심사 구분</span>
+              <div class="grid grid-cols-2 gap-1.5 h-[42px]">
+                <button type="button" data-audit-type="정기심사"
+                  class="seg-btn rounded-xl border text-xs font-bold transition bg-navy-800 border-navy-800 text-white">
+                  정기심사
+                </button>
+                <button type="button" data-audit-type="특별심사"
+                  class="seg-btn rounded-xl border text-xs font-bold transition bg-slate-50 border-slate-300 text-slate-600">
+                  특별심사
+                </button>
+              </div>
+            </div>
+
+            <!-- 대상 부서 -->
+            <div class="flex flex-col gap-1">
+              <label for="metaDept" class="text-xs font-bold text-slate-700">대상 부서 <span class="text-blue-600 font-semibold">(파일명)</span></label>
+              <input type="text" id="metaDept" placeholder="예: 본사, 기흥그룹"
+                class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+            </div>
+
+            <!-- 심사원 -->
+            <div class="flex flex-col gap-1">
+              <label for="metaAuditor" class="text-xs font-bold text-slate-700">심사원</label>
+              <input type="text" id="metaAuditor" placeholder="심사원 성명"
+                class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+            </div>
+
+            <!-- 피심사원 -->
+            <div class="flex flex-col gap-1">
+              <label for="metaAuditee" class="text-xs font-bold text-slate-700">피심사원</label>
+              <input type="text" id="metaAuditee" placeholder="피심사원 성명"
+                class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+            </div>
+
+            <!-- 비고 (상단) -->
+            <div class="flex flex-col gap-1">
+              <label for="metaNote" class="text-xs font-bold text-slate-700">비고</label>
+              <input type="text" id="metaNote" placeholder="공통 비고 사항"
+                class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+            </div>
+
+            <!-- 저장 파일명 미리보기 -->
+            <div class="col-span-2 bg-slate-100 rounded-xl px-3 py-2 text-xs text-slate-600 flex items-center justify-between gap-2">
+              <span class="truncate">저장 파일명: <strong id="filenamePreview" class="text-navy-800">내부심사 체크리스트_본사</strong></span>
+              <span class="shrink-0 text-[10px] font-semibold bg-white px-2 py-0.5 rounded-md border border-slate-200 text-slate-500">.xlsx</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 관련표준 이동 및 시트 초기화 툴바 -->
+        <div class="flex items-center gap-2">
+          <select id="categoryFilter"
+            class="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:border-navy-800 shadow-sm">
+            <option value="ALL">전체 관련표준 보기</option>
+          </select>
+          <button type="button" id="btnResetSheet"
+            class="shrink-0 px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 active:bg-slate-100 text-xs font-bold text-slate-600 shadow-sm transition">
+            초기화
+          </button>
+        </div>
+
+        <!-- 체크리스트 항목 렌더링 영역 -->
+        <div id="checklistContainer" class="space-y-2.5">
+          <div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-sm text-slate-500">
+            양식을 불러오는 중입니다...
+          </div>
+        </div>
+      </div>
+
+      <!-- [뷰 2] 부적합 시정조치 요구서 화면 -->
+      <div id="ncrView" class="hidden space-y-3">
+
+        <!-- 요구서 기본 정보 카드 -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="px-4 py-3 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between gap-2">
+            <div>
+              <div id="ncrFormTitle" class="text-sm font-bold text-navy-800">부적합 시정조치 요구서</div>
+              <div class="text-[11px] text-slate-500 mt-0.5">발행번호부터 지적구분까지 입력 및 체크하세요</div>
+            </div>
+            <button type="button" id="btnResetNcr"
+              class="shrink-0 px-2.5 py-1.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 active:bg-slate-100">
+              초기화
+            </button>
           </div>
 
-          <!-- 심사 구분 -->
-          <div class="flex flex-col gap-1">
-            <span class="text-xs font-bold text-slate-700">심사 구분</span>
-            <div class="grid grid-cols-2 gap-1.5 h-[42px]">
-              <button type="button" data-audit-type="정기심사"
-                class="seg-btn rounded-xl border text-xs font-bold transition bg-navy-800 border-navy-800 text-white">
-                정기심사
-              </button>
-              <button type="button" data-audit-type="특별심사"
-                class="seg-btn rounded-xl border text-xs font-bold transition bg-slate-50 border-slate-300 text-slate-600">
-                특별심사
-              </button>
+          <div class="p-4 grid grid-cols-2 gap-3">
+            <!-- 발행번호 -->
+            <div class="col-span-2 flex flex-col gap-1">
+              <label for="ncrIssueNo" class="text-xs font-bold text-slate-700">발행번호</label>
+              <input type="text" id="ncrIssueNo" placeholder="ESH-SHM-109-2026-01"
+                class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+            </div>
+
+            <!-- 발신부서 -->
+            <div class="flex flex-col gap-1">
+              <label for="ncrSenderDept" class="text-xs font-bold text-slate-700">발신부서</label>
+              <input type="text" id="ncrSenderDept" placeholder="예: 내부심사팀"
+                class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+            </div>
+
+            <!-- 작성자 -->
+            <div class="flex flex-col gap-1">
+              <label for="ncrAuthor" class="text-xs font-bold text-slate-700">작성자</label>
+              <input type="text" id="ncrAuthor" placeholder="작성자 성명"
+                class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+            </div>
+
+            <!-- 수신 부서 -->
+            <div class="col-span-2 flex flex-col gap-1">
+              <label for="ncrReceiverDept" class="text-xs font-bold text-slate-700">수신 부서 <span class="text-blue-600 font-semibold">(파일명)</span></label>
+              <input type="text" id="ncrReceiverDept" placeholder="예: 본사, 기흥그룹"
+                class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+            </div>
+
+            <!-- 통보일자 -->
+            <div class="flex flex-col gap-1">
+              <label for="ncrNoticeDate" class="text-xs font-bold text-slate-700">통보일자</label>
+              <input type="date" id="ncrNoticeDate"
+                class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+            </div>
+
+            <!-- 개선 요구일 -->
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center justify-between">
+                <label for="ncrDueDate" class="text-xs font-bold text-slate-700">개선 요구일</label>
+                <button type="button" id="btnDuePlus15" class="text-[10px] font-bold text-blue-600 hover:underline">+15일</button>
+              </div>
+              <input type="date" id="ncrDueDate"
+                class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+            </div>
+
+            <!-- 저장 파일명 미리보기 -->
+            <div class="col-span-2 bg-slate-100 rounded-xl px-3 py-2 text-xs text-slate-600 flex items-center justify-between gap-2">
+              <span class="truncate">저장 파일명: <strong id="ncrFilenamePreview" class="text-navy-800">부적합 시정조치 요구서_미지정</strong></span>
+              <span class="shrink-0 text-[10px] font-semibold bg-white px-2 py-0.5 rounded-md border border-slate-200 text-slate-500">.xlsx</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 심사구분 & 지적구분 체크 카드 -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">
+          <!-- 심사구분 -->
+          <div class="space-y-2">
+            <div class="text-xs font-extrabold text-slate-800">심사구분 <span class="text-[11px] font-medium text-slate-400">(복수 선택 가능)</span></div>
+            <div id="ncrAuditTypes" class="grid grid-cols-2 gap-2"></div>
+            <div id="ncrAuditEtcWrap" class="hidden pt-1">
+              <input type="text" id="ncrAuditEtcText" placeholder="기타 심사구분 내용을 입력하세요"
+                class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-xs text-slate-900 focus:outline-none focus:border-navy-800" />
             </div>
           </div>
 
-          <!-- 대상 부서 -->
-          <div class="flex flex-col gap-1">
-            <label for="metaDept" class="text-xs font-bold text-slate-700">대상 부서 <span class="text-blue-600 font-semibold">(파일명)</span></label>
-            <input type="text" id="metaDept" placeholder="예: 본사, 기흥그룹"
-              class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+          <hr class="border-slate-100" />
+
+          <!-- 지적구분 -->
+          <div class="space-y-2">
+            <div class="text-xs font-extrabold text-slate-800">지적구분 <span class="text-[11px] font-medium text-slate-400">(복수 선택 가능)</span></div>
+            <div id="ncrFindingTypes" class="grid grid-cols-3 gap-2"></div>
           </div>
+        </section>
 
-          <!-- 심사원 -->
-          <div class="flex flex-col gap-1">
-            <label for="metaAuditor" class="text-xs font-bold text-slate-700">심사원</label>
-            <input type="text" id="metaAuditor" placeholder="심사원 성명"
-              class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+        <!-- # 부적합 내용 섹션 -->
+        <section class="bg-white rounded-2xl border border-slate-200 border-l-4 border-l-rose-600 shadow-sm p-4 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <h2 class="text-sm font-extrabold text-slate-900">부적합 내용</h2>
+              <p class="text-[11px] text-slate-500 mt-0.5">항목을 작성하면 다음 항목 입력칸이 자동으로 추가됩니다.</p>
+            </div>
+            <button type="button" id="btnAddNcItem"
+              class="shrink-0 px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition">
+              + 항목 추가
+            </button>
           </div>
+          <div id="ncrNcList" class="space-y-2.5"></div>
+        </section>
 
-          <!-- 피심사원 -->
-          <div class="flex flex-col gap-1">
-            <label for="metaAuditee" class="text-xs font-bold text-slate-700">피심사원</label>
-            <input type="text" id="metaAuditee" placeholder="피심사원 성명"
-              class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
+        <!-- # 부적합 사항에 따른 시정조치 요구사항 섹션 -->
+        <section class="bg-white rounded-2xl border border-slate-200 border-l-4 border-l-navy-800 shadow-sm p-4 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <h2 class="text-sm font-extrabold text-slate-900">부적합 사항에 따른 시정조치 요구사항</h2>
+              <p class="text-[11px] text-slate-500 mt-0.5">항목을 작성하면 다음 항목 입력칸이 자동으로 추가됩니다.</p>
+            </div>
+            <button type="button" id="btnAddActionItem"
+              class="shrink-0 px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-navy-800 border border-blue-200 text-xs font-bold transition">
+              + 항목 추가
+            </button>
           </div>
+          <div id="ncrActionList" class="space-y-2.5"></div>
+        </section>
 
-          <!-- 상단 비고 -->
-          <div class="flex flex-col gap-1">
-            <label for="metaNote" class="text-xs font-bold text-slate-700">비고 (공통)</label>
-            <input type="text" id="metaNote" placeholder="공통 비고 입력"
-              class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-navy-800/20 focus:border-navy-800" />
-          </div>
-
-          <!-- 저장될 파일명 실시간 미리보기 -->
-          <div class="col-span-2 bg-slate-100 rounded-xl px-3 py-2 text-xs text-slate-600 flex items-center justify-between gap-2">
-            <span class="truncate">저장 파일명: <strong id="filenamePreview" class="text-navy-800">내부심사 체크리스트_본사</strong></span>
-            <span class="shrink-0 text-[10px] font-semibold bg-white px-2 py-0.5 rounded-md border border-slate-200 text-slate-500">.xlsx</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- 관련표준 선택 필터 및 초기화 바 -->
-      <div class="flex items-center gap-2">
-        <select id="categoryFilter"
-          class="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-800 shadow-sm focus:outline-none focus:border-navy-800">
-          <option value="ALL">전체 관련표준 보기</option>
-        </select>
-        <button type="button" id="btnResetSheet"
-          class="shrink-0 px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 active:bg-slate-100 shadow-sm">
-          초기화
-        </button>
-      </div>
-
-      <!-- 체크리스트 항목 렌더링 영역 -->
-      <div id="checklistContainer" class="space-y-2.5">
-        <div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-sm text-slate-500">
-          양식을 불러오는 중입니다...
-        </div>
       </div>
 
     </main>
@@ -304,9 +436,9 @@
       </div>
 
       <div class="space-y-4">
-        <!-- 구글 스프레드시트 링크 설정 -->
+        <!-- 구글 스프레드시트 링크 설정 (내부심사 체크리스트) -->
         <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
-          <label for="sheetUrlInput" class="block text-xs font-bold text-slate-800">구글 스프레드시트 공유 링크</label>
+          <label for="sheetUrlInput" class="block text-xs font-bold text-slate-800">내부심사 체크리스트 구글 시트 링크</label>
           <p class="text-[11.5px] text-slate-500 leading-relaxed">
             구글 시트 우측 상단 <strong>[공유] → 링크가 있는 모든 사용자(뷰어)</strong>로 설정하면 최신 양식을 실시간으로 불러옵니다.
           </p>
@@ -315,7 +447,22 @@
             placeholder="https://docs.google.com/spreadsheets/d/..." />
           <button type="button" id="btnApplyUrl"
             class="w-full py-2.5 rounded-xl bg-navy-800 hover:bg-navy-900 text-white text-xs font-bold transition">
-            구글 시트 실시간 불러오기
+            체크리스트 구글 시트 불러오기
+          </button>
+        </div>
+
+        <!-- 구글 스프레드시트 링크 설정 (부적합 시정조치 요구서) -->
+        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+          <label for="ncrSheetUrlInput" class="block text-xs font-bold text-slate-800">부적합 시정조치 요구서 구글 시트 링크</label>
+          <p class="text-[11.5px] text-slate-500 leading-relaxed">
+            부적합 시정조치 요구서 스프레드시트도 동일하게 <strong>링크가 있는 모든 사용자(뷰어)</strong> 공유 설정을 사용합니다.
+          </p>
+          <input type="text" id="ncrSheetUrlInput"
+            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-xs text-slate-800 focus:outline-none focus:border-navy-800"
+            placeholder="https://docs.google.com/spreadsheets/d/..." />
+          <button type="button" id="btnApplyNcrUrl"
+            class="w-full py-2.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold transition">
+            시정조치 요구서 구글 시트 불러오기
           </button>
         </div>
 
@@ -371,11 +518,17 @@
      *     실제 스프레드시트 3개 탭의 전체 항목을 그대로 내장)
      **********************************************************************/
     const DEFAULT_SHEET_URL = 'https://drive.google.com/open?id=1_5jxIkoYoXlfsu72S5AyYMm1vXR5cwIhu565NjaoeoY&usp=drive_copy';
+    const DEFAULT_NCR_URL = 'https://drive.google.com/open?id=1ceM3pvW27RJXPWVE0-JHNnDMfJq1fJqyCdczZUIEZWo&usp=drive_copy';
     const DEFAULT_SHEET_NAMES = [
       '1. 시스템 체제(본사)',
       '2. 시스템 체제(사업장)',
       '3. 현장활동(사업장)'
     ];
+    const NCR_TAB_ID = '__NCR_FORM__';
+    const NCR_TAB_LABEL = '4. 부적합 시정조치 요구서';
+    const NCR_ISSUE_PREFIX = 'ESH-SHM-109-';
+    const DEFAULT_NCR_AUDIT_OPTIONS = ['내부심사', '준수평가', '성과측정 및 모니터링', '기타'];
+    const DEFAULT_NCR_FINDING_OPTIONS = ['중부적합', '경부적합', '관찰사항'];
     const RESULT_OPTIONS = ['적합', '부적합, 관찰', '해당없음'];
 
     function buildEmbeddedTemplates() {
@@ -530,9 +683,11 @@
      **********************************************************************/
     const state = {
       sheetUrl: DEFAULT_SHEET_URL,
+      ncrSheetUrl: DEFAULT_NCR_URL,
       sheetNames: [...DEFAULT_SHEET_NAMES],
       currentSheet: DEFAULT_SHEET_NAMES[0],
       sheetsData: {},       // { [sheetName]: { title, meta, items, source } }
+      ncrData: null,        // 부적합 시정조치 요구서 상태 객체
       resultFilter: 'ALL',  // 'ALL' | '적합' | '부적합, 관찰' | '해당없음'
       categoryFilter: 'ALL',
       metaCollapsed: false
@@ -546,6 +701,16 @@
       const y = now.getFullYear();
       const m = String(now.getMonth() + 1).padStart(2, '0');
       const d = String(now.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function addDaysISO(baseIso, days) {
+      const base = baseIso ? new Date(baseIso + 'T00:00:00') : new Date();
+      if (isNaN(base.getTime())) return getTodayISO();
+      base.setDate(base.getDate() + days);
+      const y = base.getFullYear();
+      const m = String(base.getMonth() + 1).padStart(2, '0');
+      const d = String(base.getDate()).padStart(2, '0');
       return `${y}-${m}-${d}`;
     }
 
@@ -572,9 +737,34 @@
     }
 
     function getExportFileName() {
+      if (state.currentSheet === NCR_TAB_ID) {
+        const dept = sanitizeFilename(state.ncrData?.receiverDept);
+        return `부적합 시정조치 요구서_${dept || '미지정'}`;
+      }
       const data = state.sheetsData[state.currentSheet];
       const dept = sanitizeFilename(data?.meta?.department);
       return `내부심사 체크리스트_${dept || '미지정'}`;
+    }
+
+    function createDefaultNcrData(source = 'embedded') {
+      const today = getTodayISO();
+      return {
+        title: '부적합 시정조치 요구서',
+        source,
+        issueNo: NCR_ISSUE_PREFIX,
+        senderDept: '',
+        author: '',
+        receiverDept: '',
+        noticeDate: today,
+        dueDate: addDaysISO(today, 15),
+        auditOptions: [...DEFAULT_NCR_AUDIT_OPTIONS],
+        auditSelected: [],
+        auditEtcText: '',
+        findingOptions: [...DEFAULT_NCR_FINDING_OPTIONS],
+        findingSelected: [],
+        ncItems: [{ title: '', content: '' }],
+        actionItems: [{ title: '', content: '' }]
+      };
     }
 
     function escapeHtml(str) {
@@ -641,57 +831,60 @@
         };
 
         if (cancelText) {
-          const btnCancel = document.createElement('button');
-          btnCancel.type = 'button';
-          btnCancel.className = 'px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition';
-          btnCancel.textContent = cancelText;
-          btnCancel.onclick = () => close(false);
-          actionsEl.appendChild(btnCancel);
+          const cancelBtn = document.createElement('button');
+          cancelBtn.type = 'button';
+          cancelBtn.textContent = cancelText;
+          cancelBtn.className = 'px-4 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 transition';
+          cancelBtn.addEventListener('click', () => close(false));
+          actionsEl.appendChild(cancelBtn);
         }
 
-        const btnOk = document.createElement('button');
-        btnOk.type = 'button';
-        btnOk.className = `px-4 py-2.5 rounded-xl text-white text-xs font-bold transition ${danger ? 'bg-rose-600 hover:bg-rose-700' : 'bg-navy-800 hover:bg-navy-900'}`;
-        btnOk.textContent = confirmText;
-        btnOk.onclick = () => close(true);
-        actionsEl.appendChild(btnOk);
+        const confirmBtn = document.createElement('button');
+        confirmBtn.type = 'button';
+        confirmBtn.textContent = confirmText;
+        confirmBtn.className = danger
+          ? 'px-4 py-2 rounded-xl bg-rose-700 hover:bg-rose-800 text-xs font-bold text-white transition'
+          : 'px-4 py-2 rounded-xl bg-navy-800 hover:bg-navy-900 text-xs font-bold text-white transition';
+        confirmBtn.addEventListener('click', () => close(true));
+        actionsEl.appendChild(confirmBtn);
 
         modal.classList.remove('hidden');
         modal.classList.add('flex');
       });
     }
 
-    function setStatusBanner(html, tone = 'info') {
-      const el = document.getElementById('statusBanner');
-      const toneClasses = {
+    function setStatusBanner(html, type = 'info') {
+      const banner = document.getElementById('statusBanner');
+      const styles = {
         info: 'bg-blue-50 border-blue-200 text-blue-900',
         warning: 'bg-amber-50 border-amber-200 text-amber-900',
         error: 'bg-rose-50 border-rose-200 text-rose-900'
       };
-      el.className = `rounded-2xl p-3 text-xs leading-relaxed border ${toneClasses[tone] || toneClasses.info}`;
-      el.innerHTML = html;
+      banner.className = `rounded-2xl p-3 text-xs leading-relaxed border ${styles[type] || styles.info}`;
+      banner.innerHTML = html;
+      banner.classList.remove('hidden');
     }
 
     function hideStatusBanner() {
-      document.getElementById('statusBanner').className = 'hidden';
+      document.getElementById('statusBanner').classList.add('hidden');
     }
 
     function updateSourceBadge(source) {
       const badge = document.getElementById('sourceBadge');
       if (source === 'google') {
-        badge.textContent = '시트 실시간 연동';
-        badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/25 text-emerald-100 whitespace-nowrap';
+        badge.textContent = '구글 시트 연동';
+        badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-400/25 text-emerald-100 whitespace-nowrap';
       } else if (source === 'local') {
-        badge.textContent = '로컬 .xlsx';
-        badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-400/25 text-sky-100 whitespace-nowrap';
+        badge.textContent = '로컬 파일';
+        badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-400/25 text-amber-100 whitespace-nowrap';
       } else {
         badge.textContent = '내장 양식';
-        badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-400/25 text-amber-100 whitespace-nowrap';
+        badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/15 text-blue-100 whitespace-nowrap';
       }
     }
 
     /**********************************************************************
-     * 4. 구글 스프레드시트 JSONP 로드 및 파싱
+     * 4. 구글 스프레드시트 JSONP 불러오기 (CORS 회피) 및 파싱
      **********************************************************************/
     function fetchGoogleSheetJSONP(spreadsheetId, sheetName) {
       return new Promise((resolve, reject) => {
@@ -706,19 +899,21 @@
 
         const timer = setTimeout(() => {
           cleanup();
-          reject(new Error('구글 시트 응답 시간 초과'));
+          reject(new Error('응답 시간 초과'));
         }, 7000);
 
         window[cbName] = (response) => {
           cleanup();
           if (!response || response.status === 'error') {
-            reject(new Error(response?.errors?.[0]?.detailed_message || '시트를 읽지 못했습니다.'));
+            reject(new Error(response?.errors?.[0]?.detailed_message || '시트 접근 오류'));
             return;
           }
           resolve(response);
         };
 
-        const url = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(spreadsheetId)}/gviz/tq?tqx=responseHandler:${cbName}&sheet=${encodeURIComponent(sheetName)}&headers=0`;
+        const url = sheetName
+          ? `https://docs.google.com/spreadsheets/d/${encodeURIComponent(spreadsheetId)}/gviz/tq?tqx=responseHandler:${cbName}&sheet=${encodeURIComponent(sheetName)}&headers=0`
+          : `https://docs.google.com/spreadsheets/d/${encodeURIComponent(spreadsheetId)}/gviz/tq?tqx=responseHandler:${cbName}&headers=0`;
         script.src = url;
         script.onerror = () => {
           cleanup();
@@ -726,6 +921,80 @@
         };
         document.head.appendChild(script);
       });
+    }
+
+    function parseNcrMatrix(matrix) {
+      const ncr = createDefaultNcrData('google');
+      const isCheckboxVal = (v) => {
+        const u = String(v || '').trim().toUpperCase();
+        return u === 'TRUE' || u === 'FALSE';
+      };
+
+      for (let r = 0; r < matrix.length; r++) {
+        const row = matrix[r] || [];
+        const first = (row[0] || '').replace(/\s+/g, '');
+
+        // 제목 탐색
+        if (r <= 3 && row[0] && row[0].includes('부적합') && row[0].includes('요구서')) {
+          ncr.title = row[0].trim();
+        }
+
+        // 발행번호 기본 접두어 탐색
+        for (let c = 0; c < row.length; c++) {
+          const cellClean = (row[c] || '').replace(/\s+/g, '');
+          if (cellClean === '발행번호') {
+            const nextVal = (row[c + 1] || '').trim();
+            if (nextVal && !nextVal.includes('발신')) {
+              ncr.issueNo = nextVal;
+            }
+          }
+        }
+
+        // 심사구분 체크박스 옵션 추출
+        if (first === '심사구분') {
+          const opts = [];
+          const selected = [];
+          for (let c = 1; c < row.length; c++) {
+            if (isCheckboxVal(row[c]) && row[c + 1]) {
+              const label = row[c + 1].trim();
+              if (label && !opts.includes(label)) {
+                opts.push(label);
+                if (row[c].toUpperCase() === 'TRUE') selected.push(label);
+              }
+              c++;
+            }
+          }
+          if (opts.length > 0) {
+            ncr.auditOptions = opts;
+            ncr.auditSelected = selected;
+          }
+        }
+
+        // 지적구분 체크박스 옵션 추출
+        if (first === '지적구분') {
+          const opts = [];
+          const selected = [];
+          for (let c = 1; c < row.length; c++) {
+            if (isCheckboxVal(row[c]) && row[c + 1]) {
+              const label = row[c + 1].trim();
+              if (label && !opts.includes(label)) {
+                opts.push(label);
+                if (row[c].toUpperCase() === 'TRUE') selected.push(label);
+              }
+              c++;
+            }
+          }
+          if (opts.length > 0) {
+            ncr.findingOptions = opts;
+            ncr.findingSelected = selected;
+          }
+        }
+      }
+
+      if (!ncr.issueNo || !ncr.issueNo.startsWith(NCR_ISSUE_PREFIX)) {
+        ncr.issueNo = NCR_ISSUE_PREFIX;
+      }
+      return ncr;
     }
 
     function gvizToMatrix(response) {
@@ -835,16 +1104,96 @@
       };
     }
 
-    async function loadSheet(sheetName, forceRefresh = false) {
+    function scrollToTopSmooth() {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+
+    function updateViewMode() {
+      const isNcr = state.currentSheet === NCR_TAB_ID;
+      document.getElementById('checklistView').classList.toggle('hidden', isNcr);
+      document.getElementById('ncrView').classList.toggle('hidden', !isNcr);
+
+      const statsBar = document.getElementById('statsBar');
+      statsBar.classList.toggle('hidden', isNcr);
+      statsBar.classList.toggle('grid', !isNcr);
+    }
+
+    async function loadNcrSheet(forceRefresh = false, shouldScrollTop = false) {
+      state.currentSheet = NCR_TAB_ID;
+      updateViewMode();
+      renderTabs();
+
+      if (!forceRefresh && state.ncrData) {
+        updateSourceBadge(state.ncrData.source);
+        if (state.ncrData.source === 'google') hideStatusBanner();
+        renderNcrAll();
+        if (shouldScrollTop) scrollToTopSmooth();
+        return;
+      }
+
+      const spreadsheetId = extractSpreadsheetId(state.ncrSheetUrl);
+      showLoading('부적합 시정조치 요구서 양식을 불러오는 중...');
+
+      try {
+        if (!spreadsheetId) throw new Error('유효한 구글 시트 링크가 아닙니다.');
+        const response = await fetchGoogleSheetJSONP(spreadsheetId, '');
+        const matrix = gvizToMatrix(response);
+        const parsed = parseNcrMatrix(matrix);
+
+        // 기존 작성 내용이 있고 강제 새로고침이 아닌 경우 유지, 강제 새로고침이면 병합
+        if (state.ncrData && forceRefresh) {
+          state.ncrData.title = parsed.title;
+          state.ncrData.auditOptions = parsed.auditOptions;
+          state.ncrData.findingOptions = parsed.findingOptions;
+          state.ncrData.source = 'google';
+        } else {
+          state.ncrData = parsed;
+        }
+        updateSourceBadge('google');
+        hideStatusBanner();
+        renderNcrAll();
+        if (forceRefresh) showToast('부적합 시정조치 요구서 시트와 동기화되었습니다.', 'success');
+      } catch (err) {
+        console.warn('NCR Google Sheet fetch fallback:', err.message);
+        if (!state.ncrData) {
+          state.ncrData = createDefaultNcrData('embedded');
+        } else {
+          state.ncrData.source = 'embedded';
+        }
+        updateSourceBadge('embedded');
+        setStatusBanner(
+          `<div>
+            <strong>내장 양식으로 로드되었습니다.</strong><br/>
+            부적합 시정조치 요구서 구글 시트를 실시간 연동하려면 <strong>[공유 → 링크가 있는 모든 사용자(뷰어)]</strong>로 설정 후 상단 새로고침을 눌러주세요.
+          </div>`,
+          'warning'
+        );
+        renderNcrAll();
+      } finally {
+        hideLoading();
+        if (shouldScrollTop) scrollToTopSmooth();
+      }
+    }
+
+    async function loadSheet(sheetName, forceRefresh = false, shouldScrollTop = false) {
+      if (sheetName === NCR_TAB_ID) {
+        await loadNcrSheet(forceRefresh, shouldScrollTop);
+        return;
+      }
+
       state.currentSheet = sheetName;
       state.resultFilter = 'ALL';
       state.categoryFilter = 'ALL';
+      updateViewMode();
       renderTabs();
 
       if (!forceRefresh && state.sheetsData[sheetName]) {
         updateSourceBadge(state.sheetsData[sheetName].source);
         if (state.sheetsData[sheetName].source === 'google') hideStatusBanner();
         renderAll();
+        if (shouldScrollTop) scrollToTopSmooth();
         return;
       }
 
@@ -881,6 +1230,7 @@
         renderAll();
       } finally {
         hideLoading();
+        if (shouldScrollTop) scrollToTopSmooth();
       }
     }
 
@@ -932,6 +1282,7 @@
         state.currentSheet = loadedNames[0];
         state.resultFilter = 'ALL';
         state.categoryFilter = 'ALL';
+        updateViewMode();
         updateSourceBadge('local');
         hideStatusBanner();
         renderTabs();
@@ -950,22 +1301,34 @@
      **********************************************************************/
     function renderTabs() {
       const container = document.getElementById('sheetTabs');
-      container.innerHTML = state.sheetNames.map(name => {
-        const isActive = name === state.currentSheet;
+      const allTabs = [
+        ...state.sheetNames.map(name => ({ id: name, label: name, isNcr: false })),
+        { id: NCR_TAB_ID, label: NCR_TAB_LABEL, isNcr: true }
+      ];
+
+      container.innerHTML = allTabs.map(tab => {
+        const isActive = tab.id === state.currentSheet;
+        let tabClass = '';
+        if (isActive) {
+          tabClass = tab.isNcr
+            ? 'bg-rose-50 text-rose-800 border-rose-200 shadow-sm'
+            : 'bg-white text-navy-800 border-white shadow-sm';
+        } else {
+          tabClass = tab.isNcr
+            ? 'bg-rose-500/20 text-rose-100 border-rose-300/35 hover:bg-rose-500/30'
+            : 'bg-white/10 text-blue-100 border-white/20 hover:bg-white/20';
+        }
+
         return `
-          <button type="button" data-sheet="${escapeHtml(name)}"
-            class="sheet-tab shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap border ${
-              isActive
-                ? 'bg-white text-navy-800 border-white shadow-sm'
-                : 'bg-white/10 text-blue-100 border-white/20 hover:bg-white/20'
-            }">
-            ${escapeHtml(name)}
+          <button type="button" data-sheet="${escapeHtml(tab.id)}"
+            class="sheet-tab shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap border ${tabClass}">
+            ${escapeHtml(tab.label)}
           </button>
         `;
       }).join('');
 
       container.querySelectorAll('.sheet-tab').forEach(btn => {
-        btn.addEventListener('click', () => loadSheet(btn.dataset.sheet));
+        btn.addEventListener('click', () => loadSheet(btn.dataset.sheet, false, true));
       });
     }
 
@@ -1145,6 +1508,231 @@
     }
 
     /**********************************************************************
+     * 6-2. 부적합 시정조치 요구서 (NCR) 화면 렌더링 및 동적 항목 관리
+     **********************************************************************/
+    function ensureTrailingEmptyNcrItem(list) {
+      if (!list.length) {
+        list.push({ title: '', content: '' });
+        return false;
+      }
+      const last = list[list.length - 1];
+      if ((last.title || '').trim() !== '' || (last.content || '').trim() !== '') {
+        list.push({ title: '', content: '' });
+        return true;
+      }
+      return false;
+    }
+
+    function updateNcrFilenamePreview() {
+      const el = document.getElementById('ncrFilenamePreview');
+      if (el) el.textContent = getExportFileName();
+    }
+
+    function renderNcrMeta() {
+      const ncr = state.ncrData;
+      if (!ncr) return;
+
+      document.getElementById('ncrFormTitle').textContent = ncr.title || '부적합 시정조치 요구서';
+      document.getElementById('ncrIssueNo').value = ncr.issueNo || NCR_ISSUE_PREFIX;
+      document.getElementById('ncrSenderDept').value = ncr.senderDept || '';
+      document.getElementById('ncrAuthor').value = ncr.author || '';
+      document.getElementById('ncrReceiverDept').value = ncr.receiverDept || '';
+      document.getElementById('ncrNoticeDate').value = ncr.noticeDate || '';
+      document.getElementById('ncrDueDate').value = ncr.dueDate || '';
+      document.getElementById('ncrAuditEtcText').value = ncr.auditEtcText || '';
+      updateNcrFilenamePreview();
+    }
+
+    function renderNcrCheckboxes() {
+      const ncr = state.ncrData;
+      if (!ncr) return;
+
+      const auditContainer = document.getElementById('ncrAuditTypes');
+      auditContainer.innerHTML = ncr.auditOptions.map(opt => {
+        const checked = ncr.auditSelected.includes(opt);
+        return `
+          <button type="button" data-ncr-audit="${escapeHtml(opt)}"
+            class="ncr-check-btn min-h-[40px] px-2.5 py-2 rounded-xl border text-xs font-bold flex items-center gap-2 text-left transition active:scale-[0.98] ${
+              checked
+                ? 'bg-navy-800 border-navy-800 text-white shadow-sm'
+                : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+            }">
+            <span class="shrink-0 w-4 h-4 rounded-md border flex items-center justify-center text-[10px] ${
+              checked ? 'bg-white text-navy-800 border-white' : 'bg-white border-slate-300 text-transparent'
+            }">✔</span>
+            <span class="leading-tight">${escapeHtml(opt)}</span>
+          </button>
+        `;
+      }).join('');
+
+      const hasEtc = ncr.auditSelected.some(opt => opt.includes('기타'));
+      document.getElementById('ncrAuditEtcWrap').classList.toggle('hidden', !hasEtc);
+
+      const findingContainer = document.getElementById('ncrFindingTypes');
+      findingContainer.className = ncr.findingOptions.length === 4 ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-3 gap-2';
+      findingContainer.innerHTML = ncr.findingOptions.map(opt => {
+        const checked = ncr.findingSelected.includes(opt);
+        const activeStyle = opt.includes('중부적합')
+          ? 'bg-rose-700 border-rose-700 text-white shadow-sm'
+          : opt.includes('경부적합')
+            ? 'bg-amber-600 border-amber-600 text-white shadow-sm'
+            : 'bg-slate-700 border-slate-700 text-white shadow-sm';
+
+        return `
+          <button type="button" data-ncr-finding="${escapeHtml(opt)}"
+            class="ncr-check-btn min-h-[40px] px-2 py-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition active:scale-[0.98] ${
+              checked ? activeStyle : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+            }">
+            <span class="shrink-0 w-3.5 h-3.5 rounded border flex items-center justify-center text-[9px] ${
+              checked ? 'bg-white text-slate-900 border-white' : 'bg-white border-slate-300 text-transparent'
+            }">✔</span>
+            <span>${escapeHtml(opt)}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function createNcrItemCardElement(kind, item, idx, totalCount) {
+      const isNc = kind === 'nc';
+      const wrapper = document.createElement('div');
+      wrapper.className = 'ncr-item-card rounded-xl border border-slate-200 bg-slate-50/70 p-3 space-y-2';
+      wrapper.dataset.kind = kind;
+      wrapper.dataset.idx = String(idx);
+
+      const badgeColor = isNc ? 'bg-rose-100 text-rose-800' : 'bg-blue-100 text-navy-800';
+      const contentPlaceholder = isNc
+        ? `항목${idx + 1} 부적합 내용을 입력하세요`
+        : `항목${idx + 1} 시정조치 요구사항을 입력하세요`;
+
+      wrapper.innerHTML = `
+        <div class="flex items-center justify-between gap-2">
+          <span class="ncr-item-badge inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-extrabold ${badgeColor}">
+            항목 ${idx + 1}
+          </span>
+          <button type="button" data-remove-kind="${kind}" data-remove-idx="${idx}"
+            class="ncr-remove-btn text-[11px] font-bold text-slate-400 hover:text-rose-600 px-1.5 py-0.5 rounded-lg transition ${totalCount <= 1 ? 'hidden' : ''}">
+            삭제
+          </button>
+        </div>
+        <input type="text" data-field="title" data-kind="${kind}" data-idx="${idx}"
+          value="${escapeHtml(item.title)}"
+          placeholder="항목${idx + 1} 제목/관련표준 (선택 입력)"
+          class="ncr-item-input w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-navy-800/15 focus:border-navy-800" />
+        <textarea rows="2" data-field="content" data-kind="${kind}" data-idx="${idx}"
+          placeholder="${contentPlaceholder}"
+          class="ncr-item-input w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 resize-y min-h-[56px] focus:outline-none focus:ring-2 focus:ring-navy-800/15 focus:border-navy-800">${escapeHtml(item.content)}</textarea>
+      `;
+      return wrapper;
+    }
+
+    function renderNcrItemsSection(kind) {
+      const ncr = state.ncrData;
+      if (!ncr) return;
+      const list = kind === 'nc' ? ncr.ncItems : ncr.actionItems;
+      if (!list.length) list.push({ title: '', content: '' });
+
+      const container = document.getElementById(kind === 'nc' ? 'ncrNcList' : 'ncrActionList');
+      container.innerHTML = '';
+      list.forEach((item, idx) => {
+        container.appendChild(createNcrItemCardElement(kind, item, idx, list.length));
+      });
+    }
+
+    function renderNcrAll() {
+      if (!state.ncrData) state.ncrData = createDefaultNcrData('embedded');
+      renderNcrMeta();
+      renderNcrCheckboxes();
+      renderNcrItemsSection('nc');
+      renderNcrItemsSection('action');
+    }
+
+    /**
+     * 작성된 부적합 내용 / 시정조치 요구사항 항목들을
+     * # 항목1 \n - 내용 형식의 깔끔한 다중행 텍스트로 변환
+     */
+    function formatNcrItemsForDocument(items) {
+      const filled = (items || []).filter(it => (it.title || '').trim() !== '' || (it.content || '').trim() !== '');
+      if (!filled.length) return '';
+
+      return filled.map((it, i) => {
+        const heading = (it.title || '').trim()
+          ? `${i + 1}. ${(it.title || '').trim()}`
+          : `${i + 1}. 항목${i + 1}`;
+        const rawContent = (it.content || '').trim();
+        if (!rawContent) return heading;
+
+        const lines = rawContent.split('\n').map(line => {
+          const t = line.trim();
+          if (!t) return '';
+          return t.startsWith('-') ? `  ${t}` : `  - ${t}`;
+        }).filter(Boolean).join('\n');
+
+        return `${heading}\n${lines}`;
+      }).join('\n\n');
+    }
+
+    /**
+     * 내부심사 체크리스트의 '부적합, 관찰' 항목들을 부적합 시정조치 요구서에 자동 반영
+     */
+    async function populateNcrFromChecklist(checklistData, failItems) {
+      if (!state.ncrData) {
+        await loadNcrSheet(false, false);
+      }
+      const ncr = state.ncrData;
+      const today = checklistData.meta.date || getTodayISO();
+
+      if (!ncr.issueNo || ncr.issueNo.trim() === '') {
+        ncr.issueNo = NCR_ISSUE_PREFIX;
+      }
+      if (!ncr.senderDept.trim()) {
+        ncr.senderDept = '내부심사팀';
+      }
+      if (checklistData.meta.auditor && checklistData.meta.auditor.trim()) {
+        ncr.author = checklistData.meta.auditor.trim();
+      }
+      if (checklistData.meta.department && checklistData.meta.department.trim()) {
+        ncr.receiverDept = checklistData.meta.department.trim();
+      }
+      ncr.noticeDate = today;
+      ncr.dueDate = addDaysISO(today, 15);
+
+      if (ncr.auditOptions.includes('내부심사') && !ncr.auditSelected.includes('내부심사')) {
+        ncr.auditSelected = ['내부심사'];
+      }
+
+      // 부적합 내용 및 시정조치 요구사항에 자동 반영 (+ 추가 입력용 빈 항목 1개 자동 배치)
+      ncr.ncItems = failItems.map(item => {
+        const firstLine = item.text.split('\n')[0].trim();
+        const itemTitle = `[${item.category} / NO.${item.no}] ${firstLine}`;
+        const noteText = (item.note || '').trim();
+        return {
+          title: itemTitle,
+          content: noteText || item.text.trim()
+        };
+      });
+      ncr.ncItems.push({ title: '', content: '' });
+
+      ncr.actionItems = failItems.map(item => {
+        const firstLine = item.text.split('\n')[0].trim();
+        const itemTitle = `[${item.category} / NO.${item.no}] ${firstLine}`;
+        const noteText = (item.note || '').trim();
+        return {
+          title: itemTitle,
+          content: noteText ? `${noteText} 개선 조치 요청` : ''
+        };
+      });
+      ncr.actionItems.push({ title: '', content: '' });
+
+      state.currentSheet = NCR_TAB_ID;
+      updateViewMode();
+      renderTabs();
+      updateSourceBadge(ncr.source);
+      renderNcrAll();
+      scrollToTopSmooth();
+      showToast(`'부적합, 관찰' 항목 ${failItems.length}건이 요구서에 자동 반영되었습니다.`, 'success');
+    }
+
+    /**********************************************************************
      * 7. Excel (.xlsx) 파일 생성 및 저장 (A4 세로 출력 규격)
      **********************************************************************/
     function applyBorderRange(ws, r1, c1, r2, c2) {
@@ -1184,8 +1772,14 @@
     }
 
     async function exportExcel() {
+      if (state.currentSheet === NCR_TAB_ID) {
+        await exportNcrExcel();
+        return;
+      }
+
       if (!(await checkDepartmentBeforeExport('xlsx'))) return;
       const data = state.sheetsData[state.currentSheet];
+      let savedSuccessfully = false;
 
       showLoading('A4 인쇄 규격 Excel 파일을 생성하는 중...');
       try {
@@ -1400,6 +1994,268 @@
         document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(url), 1500);
         showToast(`${getExportFileName()}.xlsx 저장 완료`, 'success');
+        savedSuccessfully = true;
+      } catch (err) {
+        console.error(err);
+        showToast('Excel 생성 오류: ' + err.message, 'error');
+      } finally {
+        hideLoading();
+      }
+
+      // 저장 완료 후 '부적합, 관찰' 항목이 존재하면 부적합 시정조치 요구서 자동 연계 팝업 표시
+      if (savedSuccessfully) {
+        const failItems = data.items.filter(it => it.result === '부적합, 관찰');
+        if (failItems.length > 0) {
+          const goNcr = await openDialog({
+            title: '부적합 시정조치 요구서 작성',
+            message: `'부적합, 관찰'로 체크된 항목이 ${failItems.length}건 있습니다.\n추가로 부적합 시정조치 요구서를 작성하시겠습니까?\n\n(체크된 항목이 부적합 내용 및 시정조치 요구사항에 자동 반영됩니다.)`,
+            confirmText: '요구서 작성하기',
+            cancelText: '나중에'
+          });
+          if (goNcr) {
+            await populateNcrFromChecklist(data, failItems);
+          }
+        }
+      }
+    }
+
+    /**
+     * 부적합 시정조치 요구서 A4 세로 규격 Excel (.xlsx) 생성 및 저장
+     */
+    async function exportNcrExcel() {
+      const ncr = state.ncrData;
+      if (!ncr) {
+        showToast('저장할 요구서 데이터가 없습니다.', 'error');
+        return;
+      }
+
+      if (!(ncr.receiverDept || '').trim()) {
+        const ok = await openDialog({
+          title: '수신 부서 미입력',
+          message: '수신 부서가 비어 있습니다.\n"부적합 시정조치 요구서_미지정.xlsx" 파일명으로 저장하시겠습니까?',
+          confirmText: '그대로 저장',
+          cancelText: '부서 입력하기'
+        });
+        if (!ok) {
+          document.getElementById('ncrReceiverDept').focus();
+          return;
+        }
+      }
+
+      showLoading('A4 인쇄 규격 부적합 시정조치 요구서 Excel을 생성하는 중...');
+      try {
+        const wb = new ExcelJS.Workbook();
+        const ws = wb.addWorksheet('부적합 시정조치 요구서', {
+          pageSetup: {
+            paperSize: 9, // A4
+            orientation: 'portrait',
+            fitToPage: true,
+            fitToWidth: 1,
+            fitToHeight: 1,
+            margins: { left: 0.4, right: 0.4, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 }
+          }
+        });
+
+        // A~J 10열 구성 (스프레드시트 2. 부적합 시정조치 요구서 양식 기준)
+        ws.columns = [
+          { width: 16 },   // A: 항목 라벨
+          { width: 4.5 },  // B: 체크1
+          { width: 15 },   // C: 라벨1
+          { width: 4.5 },  // D: 체크2 / 통보일자 시작
+          { width: 12 },   // E: 라벨2
+          { width: 4.5 },  // F: 체크3
+          { width: 20 },   // G: 라벨3
+          { width: 14 },   // H: 작성자 / 개선 요구일 / 체크4 (글씨가 잘리지 않도록 너비 확보)
+          { width: 10.5 }, // I: 라벨4 (기타 병합 시작)
+          { width: 10.5 }  // J: 라벨4 (기타 병합 끝)
+        ];
+
+        const fontBase = { name: '맑은 고딕', size: 10 };
+        const fontBold = { name: '맑은 고딕', size: 10, bold: true };
+        const fillHeader = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } };
+        const fillLabel = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
+
+        // 1~2행: 제목
+        ws.mergeCells('A1:J2');
+        ws.getRow(1).height = 22;
+        ws.getRow(2).height = 22;
+        const titleCell = ws.getCell('A1');
+        titleCell.value = ncr.title || '부적합 시정조치 요구서';
+        titleCell.font = { name: '맑은 고딕', size: 16, bold: true, color: { argb: 'FF0F172A' } };
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        titleCell.fill = fillHeader;
+        applyBorderRange(ws, 1, 1, 2, 10);
+
+        // 3행: 여백
+        ws.getRow(3).height = 8;
+
+        // 4행: 발행번호 / 발신부서 / 작성자
+        ws.getRow(4).height = 26;
+        ws.mergeCells('B4:C4');
+        ws.mergeCells('D4:E4');
+        ws.mergeCells('F4:G4');
+        ws.mergeCells('I4:J4');
+
+        ws.getCell('A4').value = '발행번호';
+        ws.getCell('B4').value = ncr.issueNo || NCR_ISSUE_PREFIX;
+        ws.getCell('D4').value = '발신부서';
+        ws.getCell('F4').value = ncr.senderDept || '';
+        ws.getCell('H4').value = '작성자';
+        ws.getCell('I4').value = ncr.author || '';
+
+        ['A4', 'D4', 'H4'].forEach(addr => {
+          const c = ws.getCell(addr);
+          c.font = fontBold;
+          c.fill = fillLabel;
+          c.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        });
+        ['B4', 'F4', 'I4'].forEach(addr => {
+          const c = ws.getCell(addr);
+          c.font = fontBase;
+          c.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        });
+        applyBorderRange(ws, 4, 1, 4, 10);
+
+        // 5행: 수신 부서 / 통보일자 / 개선 요구일
+        ws.getRow(5).height = 26;
+        ws.mergeCells('B5:C5');
+        ws.mergeCells('D5:E5');
+        ws.mergeCells('F5:G5');
+        ws.mergeCells('I5:J5');
+
+        ws.getCell('A5').value = '수신 부서';
+        ws.getCell('B5').value = ncr.receiverDept || '';
+        ws.getCell('D5').value = '통보일자';
+        ws.getCell('F5').value = formatKoreanDate(ncr.noticeDate);
+        ws.getCell('H5').value = '개선 요구일';
+        ws.getCell('I5').value = formatKoreanDate(ncr.dueDate);
+
+        ['A5', 'D5', 'H5'].forEach(addr => {
+          const c = ws.getCell(addr);
+          c.font = fontBold;
+          c.fill = fillLabel;
+          c.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        });
+        ['B5', 'F5', 'I5'].forEach(addr => {
+          const c = ws.getCell(addr);
+          c.font = fontBase;
+          c.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        });
+        applyBorderRange(ws, 5, 1, 5, 10);
+
+        // 6행: 심사구분 (I6:J6을 '기타'로 병합 및 각 항목 가운데 정렬)
+        ws.getRow(6).height = 28;
+        ws.mergeCells('I6:J6');
+        ws.getCell('A6').value = '심사구분';
+        ws.getCell('A6').font = fontBold;
+        ws.getCell('A6').fill = fillLabel;
+        ws.getCell('A6').alignment = { horizontal: 'center', vertical: 'middle' };
+
+        const auditPairs = [
+          [2, 3, ncr.auditOptions[0] || '내부심사'],
+          [4, 5, ncr.auditOptions[1] || '준수평가'],
+          [6, 7, ncr.auditOptions[2] || '성과측정 및 모니터링'],
+          [8, 9, ncr.auditOptions[3] || '기타']
+        ];
+        auditPairs.forEach(([chkCol, lblCol, label]) => {
+          const isChecked = ncr.auditSelected.includes(label);
+          const chkCell = ws.getCell(6, chkCol);
+          chkCell.value = isChecked ? '☑' : '☐';
+          chkCell.font = { name: '맑은 고딕', size: 12, bold: isChecked, color: { argb: isChecked ? 'FF1E3A5F' : 'FF64748B' } };
+          chkCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+          const lblCell = ws.getCell(6, lblCol);
+          const isEtc = lblCol === 9;
+          const etcExtra = (isEtc && isChecked && (ncr.auditEtcText || '').trim())
+            ? ` (${ncr.auditEtcText.trim()})`
+            : '';
+          lblCell.value = `${label}${etcExtra}`;
+          lblCell.font = isChecked ? fontBold : fontBase;
+          lblCell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        });
+        applyBorderRange(ws, 6, 1, 6, 10);
+
+        // 7행: 지적구분 (각 항목 가운데 정렬)
+        ws.getRow(7).height = 28;
+        ws.getCell('A7').value = '지적구분';
+        ws.getCell('A7').font = fontBold;
+        ws.getCell('A7').fill = fillLabel;
+        ws.getCell('A7').alignment = { horizontal: 'center', vertical: 'middle' };
+
+        const findingSlots = [
+          [2, 3, ncr.findingOptions[0]],
+          [4, 5, ncr.findingOptions[1]],
+          [6, 7, ncr.findingOptions[2]],
+          [8, 9, ncr.findingOptions[3]]
+        ];
+        findingSlots.forEach(([chkCol, lblCol, label]) => {
+          if (!label) return;
+          const isChecked = ncr.findingSelected.includes(label);
+          const chkCell = ws.getCell(7, chkCol);
+          chkCell.value = isChecked ? '☑' : '☐';
+          chkCell.font = { name: '맑은 고딕', size: 12, bold: isChecked, color: { argb: isChecked ? 'FFB91C1C' : 'FF64748B' } };
+          chkCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+          const lblCell = ws.getCell(7, lblCol);
+          lblCell.value = label;
+          lblCell.font = isChecked ? fontBold : fontBase;
+          lblCell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        });
+        if (!ncr.findingOptions[3]) {
+          ws.mergeCells('H7:J7');
+        }
+        applyBorderRange(ws, 7, 1, 7, 10);
+
+        // 8행: 부적합 내용 (세로 가운데 정렬)
+        const ncFormatted = formatNcrItemsForDocument(ncr.ncItems);
+        ws.mergeCells('B8:J8');
+        ws.getCell('A8').value = '부적합 내용';
+        ws.getCell('A8').font = fontBold;
+        ws.getCell('A8').fill = fillLabel;
+        ws.getCell('A8').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+
+        ws.getCell('B8').value = ncFormatted;
+        ws.getCell('B8').font = fontBase;
+        ws.getCell('B8').alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+
+        const ncLineCount = ncFormatted
+          ? ncFormatted.split('\n').reduce((sum, l) => sum + Math.max(1, Math.ceil(l.length / 48)), 0)
+          : 1;
+        ws.getRow(8).height = Math.max(180, ncLineCount * 17 + 24);
+        applyBorderRange(ws, 8, 1, 8, 10);
+
+        // 9행: 부적합 사항에 따른 시정조치 요구사항 (세로 가운데 정렬)
+        const actionFormatted = formatNcrItemsForDocument(ncr.actionItems);
+        ws.mergeCells('B9:J9');
+        ws.getCell('A9').value = '부적합 사항에 따른\n시정조치 요구사항';
+        ws.getCell('A9').font = fontBold;
+        ws.getCell('A9').fill = fillLabel;
+        ws.getCell('A9').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+
+        ws.getCell('B9').value = actionFormatted;
+        ws.getCell('B9').font = fontBase;
+        ws.getCell('B9').alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+
+        const actionLineCount = actionFormatted
+          ? actionFormatted.split('\n').reduce((sum, l) => sum + Math.max(1, Math.ceil(l.length / 48)), 0)
+          : 1;
+        ws.getRow(9).height = Math.max(180, actionLineCount * 17 + 24);
+        applyBorderRange(ws, 9, 1, 9, 10);
+
+        // 다운로드 실행
+        const buffer = await wb.xlsx.writeBuffer();
+        const blob = new Blob([buffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${getExportFileName()}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        showToast(`${getExportFileName()}.xlsx 저장 완료`, 'success');
       } catch (err) {
         console.error(err);
         showToast('Excel 생성 오류: ' + err.message, 'error');
@@ -1409,10 +2265,12 @@
     }
 
     /**********************************************************************
-     * 8. A4 출력 양식 미리보기 HTML 빌더
+     * 8. A4 출력 양식 HTML 생성 (체크리스트 & 부적합 시정조치 요구서)
      **********************************************************************/
-    function buildPdfHtml(data) {
+    function buildA4ChecklistHtml(data) {
       const stats = computeStats(data.items);
+
+      // 연속된 관련표준 행 병합(rowspan) 계산
       const rowSpans = new Array(data.items.length).fill(0);
       let i = 0;
       while (i < data.items.length) {
@@ -1428,7 +2286,7 @@
           : '';
         const trimmedNote = (item.note || '').trim();
         const shouldFillDash = (item.result === '적합' || item.result === '해당없음') && trimmedNote === '';
-        const noteDisplay = shouldFillDash ? '-' : item.note;
+        const noteDisplay = shouldFillDash ? '-' : escapeHtml(item.note);
         const noteAlignClass = shouldFillDash ? 'pdf-center' : 'pdf-left';
 
         return `
@@ -1439,13 +2297,13 @@
             <td class="pdf-center pdf-mark pdf-mark-pass">${item.result === '적합' ? '✔' : ''}</td>
             <td class="pdf-center pdf-mark pdf-mark-fail">${item.result === '부적합, 관찰' ? '✔' : ''}</td>
             <td class="pdf-center pdf-mark pdf-mark-na">${item.result === '해당없음' ? '✔' : ''}</td>
-            <td class="${noteAlignClass}">${escapeHtml(noteDisplay)}</td>
+            <td class="${noteAlignClass}">${noteDisplay}</td>
           </tr>
         `;
       }).join('');
 
       return `
-        <div class="pdf-wrapper shadow-md">
+        <div class="pdf-wrapper">
           <div class="pdf-title">${escapeHtml(data.title)}</div>
 
           <table class="pdf-table">
@@ -1521,8 +2379,98 @@
       `;
     }
 
+    function buildA4NcrHtml(ncr) {
+      const auditLabels = [
+        ncr.auditOptions[0] || '내부심사',
+        ncr.auditOptions[1] || '준수평가',
+        ncr.auditOptions[2] || '성과측정 및 모니터링',
+        ncr.auditOptions[3] || '기타'
+      ];
+      const auditCellsHtml = auditLabels.map((label, idx) => {
+        const checked = ncr.auditSelected.includes(label);
+        const isEtc = idx === 3;
+        const extra = (isEtc && checked && (ncr.auditEtcText || '').trim())
+          ? ` (${ncr.auditEtcText.trim()})`
+          : '';
+        const colSpanAttr = isEtc ? ' colspan="2"' : '';
+        return `
+          <td class="pdf-center" style="font-size:12px; font-weight:${checked ? '700' : '400'}; color:${checked ? '#1e3a5f' : '#64748b'};">${checked ? '☑' : '☐'}</td>
+          <td${colSpanAttr} class="pdf-center" style="font-weight:${checked ? '700' : '400'};">${escapeHtml(label + extra)}</td>
+        `;
+      }).join('');
+
+      const findingCellsHtml = [0, 1, 2, 3].map(idx => {
+        const label = ncr.findingOptions[idx];
+        if (!label) {
+          return idx === 3 ? '<td colspan="3" class="pdf-center"></td>' : '';
+        }
+        const checked = ncr.findingSelected.includes(label);
+        const colSpanAttr = idx === 3 ? ' colspan="2"' : '';
+        return `
+          <td class="pdf-center" style="font-size:12px; font-weight:${checked ? '700' : '400'}; color:${checked ? '#b91c1c' : '#64748b'};">${checked ? '☑' : '☐'}</td>
+          <td${colSpanAttr} class="pdf-center" style="font-weight:${checked ? '700' : '400'};">${escapeHtml(label)}</td>
+        `;
+      }).join('');
+
+      const ncFormatted = formatNcrItemsForDocument(ncr.ncItems);
+      const actionFormatted = formatNcrItemsForDocument(ncr.actionItems);
+
+      return `
+        <div class="pdf-wrapper">
+          <div class="pdf-title">${escapeHtml(ncr.title || '부적합 시정조치 요구서')}</div>
+
+          <table class="pdf-table">
+            <colgroup>
+              <col style="width:15%">
+              <col style="width:4%">
+              <col style="width:14%">
+              <col style="width:4%">
+              <col style="width:11%">
+              <col style="width:4%">
+              <col style="width:18%">
+              <col style="width:12%">
+              <col style="width:9%">
+              <col style="width:9%">
+            </colgroup>
+            <tr>
+              <th>발행번호</th>
+              <td colspan="2" class="pdf-center">${escapeHtml(ncr.issueNo || NCR_ISSUE_PREFIX)}</td>
+              <th colspan="2">발신부서</th>
+              <td colspan="2" class="pdf-center">${escapeHtml(ncr.senderDept || '')}</td>
+              <th>작성자</th>
+              <td colspan="2" class="pdf-center">${escapeHtml(ncr.author || '')}</td>
+            </tr>
+            <tr>
+              <th>수신 부서</th>
+              <td colspan="2" class="pdf-center">${escapeHtml(ncr.receiverDept || '')}</td>
+              <th colspan="2">통보일자</th>
+              <td colspan="2" class="pdf-center">${escapeHtml(formatKoreanDate(ncr.noticeDate))}</td>
+              <th>개선 요구일</th>
+              <td colspan="2" class="pdf-center">${escapeHtml(formatKoreanDate(ncr.dueDate))}</td>
+            </tr>
+            <tr>
+              <th>심사구분</th>
+              ${auditCellsHtml}
+            </tr>
+            <tr>
+              <th>지적구분</th>
+              ${findingCellsHtml}
+            </tr>
+            <tr>
+              <th style="height:180px;">부적합 내용</th>
+              <td colspan="9" class="pdf-ncr-box">${escapeHtml(ncFormatted)}</td>
+            </tr>
+            <tr>
+              <th style="height:180px;">부적합 사항에 따른<br/>시정조치 요구사항</th>
+              <td colspan="9" class="pdf-ncr-box">${escapeHtml(actionFormatted)}</td>
+            </tr>
+          </table>
+        </div>
+      `;
+    }
+
     /**********************************************************************
-     * 9. 모달 제어 및 이벤트 바인딩
+     * 9. 모달 제어 및 이벤트 초기화
      **********************************************************************/
     function toggleMetaSection() {
       state.metaCollapsed = !state.metaCollapsed;
@@ -1532,6 +2480,7 @@
 
     function openSettingsModal() {
       document.getElementById('sheetUrlInput').value = state.sheetUrl;
+      document.getElementById('ncrSheetUrlInput').value = state.ncrSheetUrl;
       const modal = document.getElementById('settingsModal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
@@ -1544,10 +2493,19 @@
     }
 
     function openPreviewModal() {
-      const data = state.sheetsData[state.currentSheet];
-      if (!data) return;
-      document.getElementById('previewFileLabel').textContent = `파일명: ${getExportFileName()}`;
-      document.getElementById('previewBody').innerHTML = buildPdfHtml(data);
+      const bodyEl = document.getElementById('previewBody');
+      if (state.currentSheet === NCR_TAB_ID) {
+        if (!state.ncrData) state.ncrData = createDefaultNcrData('embedded');
+        bodyEl.innerHTML = buildA4NcrHtml(state.ncrData);
+      } else {
+        const data = state.sheetsData[state.currentSheet];
+        if (!data) {
+          showToast('미리볼 데이터가 없습니다.', 'warning');
+          return;
+        }
+        bodyEl.innerHTML = buildA4ChecklistHtml(data);
+      }
+      document.getElementById('previewFileLabel').textContent = `${getExportFileName()}.xlsx`;
       const modal = document.getElementById('previewModal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
@@ -1559,11 +2517,56 @@
       modal.classList.remove('flex');
     }
 
+    function handleNcrListInput(e, kind) {
+      const target = e.target;
+      if (!target.classList.contains('ncr-item-input')) return;
+      const ncr = state.ncrData;
+      if (!ncr) return;
+
+      const list = kind === 'nc' ? ncr.ncItems : ncr.actionItems;
+      const idx = Number(target.dataset.idx);
+      const field = target.dataset.field;
+      if (!list[idx]) return;
+
+      list[idx][field] = target.value;
+
+      // 마지막 항목에 글자를 입력하면 포커스를 유지한 채 다음 빈 항목을 자동으로 추가
+      if (idx === list.length - 1 && ensureTrailingEmptyNcrItem(list)) {
+        const container = document.getElementById(kind === 'nc' ? 'ncrNcList' : 'ncrActionList');
+        const newIdx = list.length - 1;
+        container.appendChild(createNcrItemCardElement(kind, list[newIdx], newIdx, list.length));
+        container.querySelectorAll('.ncr-remove-btn').forEach(btn => btn.classList.remove('hidden'));
+      }
+    }
+
+    function handleNcrListClick(e, kind) {
+      const btn = e.target.closest('.ncr-remove-btn');
+      if (!btn) return;
+      const ncr = state.ncrData;
+      if (!ncr) return;
+
+      const list = kind === 'nc' ? ncr.ncItems : ncr.actionItems;
+      const idx = Number(btn.dataset.removeIdx);
+      if (list.length <= 1) {
+        list[0] = { title: '', content: '' };
+      } else {
+        list.splice(idx, 1);
+      }
+      renderNcrItemsSection(kind);
+    }
+
     function initEvents() {
-      // 기본 정보 접기/펼치기
+      // 상단 헤더 버튼
+      document.getElementById('btnPreviewA4').addEventListener('click', openPreviewModal);
+      document.getElementById('btnReload').addEventListener('click', () => {
+        loadSheet(state.currentSheet, true, false);
+      });
+      document.getElementById('btnSettings').addEventListener('click', openSettingsModal);
+
+      // 체크리스트 기본 정보 접기/펼치기
       document.getElementById('metaToggle').addEventListener('click', toggleMetaSection);
 
-      // 기본 정보 입력 실시간 반영
+      // 체크리스트 기본 정보 입력 바인딩
       const bindMetaInput = (id, key) => {
         document.getElementById(id).addEventListener('input', (e) => {
           const data = state.sheetsData[state.currentSheet];
@@ -1578,7 +2581,7 @@
       bindMetaInput('metaAuditee', 'auditee');
       bindMetaInput('metaNote', 'note');
 
-      // 심사 구분 토글
+      // 심사 구분 토글 (정기심사 / 특별심사)
       document.querySelectorAll('[data-audit-type]').forEach(btn => {
         btn.addEventListener('click', () => {
           const data = state.sheetsData[state.currentSheet];
@@ -1588,7 +2591,7 @@
         });
       });
 
-      // 상단 요약 바 필터
+      // 상단 통계 필터 버튼
       document.querySelectorAll('.stat-pill').forEach(pill => {
         pill.addEventListener('click', () => {
           const target = pill.dataset.filter;
@@ -1598,15 +2601,14 @@
         });
       });
 
-      // 관련표준 드롭다운 필터
+      // 관련표준 필터 드롭다운
       document.getElementById('categoryFilter').addEventListener('change', (e) => {
         state.categoryFilter = e.target.value;
         renderChecklist();
       });
 
-      // 체크리스트 카드 내 결과 버튼 & 비고 입력 (이벤트 위임)
+      // 체크리스트 항목 이벤트 위임 (결과 선택 & 비고 입력)
       const checklistEl = document.getElementById('checklistContainer');
-
       checklistEl.addEventListener('click', (e) => {
         const btn = e.target.closest('.res-btn');
         if (!btn) return;
@@ -1617,16 +2619,18 @@
         const res = btn.dataset.res;
         data.items[idx].result = res;
 
-        // 현재 카드만 즉시 업데이트하여 모바일 스크롤 위치 유지
+        // 스크롤 위치를 유지하며 카드 스타일만 즉시 갱신
         const card = btn.closest('.item-card');
         card.className = `item-card rounded-2xl border border-slate-200 border-l-4 p-3.5 shadow-sm transition ${getCardBorderClass(res)}`;
         card.querySelectorAll('.res-btn').forEach(b => {
           b.className = getResultButtonClass(b.dataset.res, res);
         });
         const noteEl = card.querySelector('.item-note');
-        noteEl.className = `item-note w-full px-3 py-2 rounded-xl border text-xs text-slate-800 resize-y min-h-[38px] focus:outline-none focus:ring-2 focus:ring-navy-800/15 focus:border-navy-800 ${
-          res === '부적합, 관찰' ? 'border-rose-300 bg-white' : 'border-slate-200 bg-slate-50/70 focus:bg-white'
-        }`;
+        if (noteEl) {
+          noteEl.className = `item-note w-full px-3 py-2 rounded-xl border text-xs text-slate-800 resize-y min-h-[38px] focus:outline-none focus:ring-2 focus:ring-navy-800/15 focus:border-navy-800 ${
+            res === '부적합, 관찰' ? 'border-rose-300 bg-white' : 'border-slate-200 bg-slate-50/70 focus:bg-white'
+          }`;
+        }
 
         renderStats();
       });
@@ -1639,13 +2643,13 @@
         data.items[idx].note = e.target.value;
       });
 
-      // 현재 시트 초기화
+      // 현재 체크리스트 시트 초기화
       document.getElementById('btnResetSheet').addEventListener('click', async () => {
         const data = state.sheetsData[state.currentSheet];
         if (!data) return;
         const ok = await openDialog({
           title: '체크리스트 초기화',
-          message: `'${state.currentSheet}'의 모든 심사결과를 '적합'으로 되돌리고 입력한 비고 및 기본 정보를 초기화할까요?`,
+          message: `'${state.currentSheet}'의 입력 내용을 초기화하고 모든 심사결과를 '적합'으로 되돌리시겠습니까?`,
           confirmText: '초기화',
           cancelText: '취소',
           danger: true
@@ -1656,35 +2660,110 @@
           it.result = '적합';
           it.note = '';
         });
+        data.meta.date = getTodayISO();
+        data.meta.auditType = '정기심사';
         data.meta.auditor = '';
         data.meta.auditee = '';
         data.meta.note = '';
-        data.meta.date = getTodayISO();
-        data.meta.auditType = '정기심사';
         renderAll();
-        showToast('현재 시트가 초기화되었습니다.', 'info');
+        showToast('초기화가 완료되었습니다.', 'info');
       });
 
-      // 상단 버튼들
-      document.getElementById('btnReload').addEventListener('click', () => loadSheet(state.currentSheet, true));
-      document.getElementById('btnSettings').addEventListener('click', openSettingsModal);
+      // 부적합 시정조치 요구서 (NCR) 기본 정보 입력 바인딩
+      const bindNcrInput = (id, key, onAfter) => {
+        document.getElementById(id).addEventListener('input', (e) => {
+          if (!state.ncrData) state.ncrData = createDefaultNcrData('embedded');
+          state.ncrData[key] = e.target.value;
+          if (onAfter) onAfter();
+        });
+      };
+      bindNcrInput('ncrIssueNo', 'issueNo');
+      bindNcrInput('ncrSenderDept', 'senderDept');
+      bindNcrInput('ncrAuthor', 'author');
+      bindNcrInput('ncrReceiverDept', 'receiverDept', updateNcrFilenamePreview);
+      bindNcrInput('ncrNoticeDate', 'noticeDate');
+      bindNcrInput('ncrDueDate', 'dueDate');
+      bindNcrInput('ncrAuditEtcText', 'auditEtcText');
+
+      // 개선 요구일 +15일 간편 버튼
+      document.getElementById('btnDuePlus15').addEventListener('click', () => {
+        if (!state.ncrData) state.ncrData = createDefaultNcrData('embedded');
+        const nextDue = addDaysISO(state.ncrData.noticeDate || getTodayISO(), 15);
+        state.ncrData.dueDate = nextDue;
+        document.getElementById('ncrDueDate').value = nextDue;
+        showToast(`개선 요구일이 ${nextDue}로 설정되었습니다.`, 'info');
+      });
+
+      // NCR 심사구분 체크 토글
+      document.getElementById('ncrAuditTypes').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-ncr-audit]');
+        if (!btn || !state.ncrData) return;
+        const opt = btn.dataset.ncrAudit;
+        const list = state.ncrData.auditSelected;
+        const i = list.indexOf(opt);
+        if (i >= 0) list.splice(i, 1);
+        else list.push(opt);
+        renderNcrCheckboxes();
+      });
+
+      // NCR 지적구분 체크 토글
+      document.getElementById('ncrFindingTypes').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-ncr-finding]');
+        if (!btn || !state.ncrData) return;
+        const opt = btn.dataset.ncrFinding;
+        const list = state.ncrData.findingSelected;
+        const i = list.indexOf(opt);
+        if (i >= 0) list.splice(i, 1);
+        else list.push(opt);
+        renderNcrCheckboxes();
+      });
+
+      // NCR 부적합 내용 / 시정조치 요구사항 동적 항목 이벤트
+      const ncListEl = document.getElementById('ncrNcList');
+      const actionListEl = document.getElementById('ncrActionList');
+      ncListEl.addEventListener('input', (e) => handleNcrListInput(e, 'nc'));
+      ncListEl.addEventListener('click', (e) => handleNcrListClick(e, 'nc'));
+      actionListEl.addEventListener('input', (e) => handleNcrListInput(e, 'action'));
+      actionListEl.addEventListener('click', (e) => handleNcrListClick(e, 'action'));
+
+      document.getElementById('btnAddNcItem').addEventListener('click', () => {
+        if (!state.ncrData) state.ncrData = createDefaultNcrData('embedded');
+        state.ncrData.ncItems.push({ title: '', content: '' });
+        renderNcrItemsSection('nc');
+        const inputs = ncListEl.querySelectorAll('textarea');
+        if (inputs.length) inputs[inputs.length - 1].focus();
+      });
+
+      document.getElementById('btnAddActionItem').addEventListener('click', () => {
+        if (!state.ncrData) state.ncrData = createDefaultNcrData('embedded');
+        state.ncrData.actionItems.push({ title: '', content: '' });
+        renderNcrItemsSection('action');
+        const inputs = actionListEl.querySelectorAll('textarea');
+        if (inputs.length) inputs[inputs.length - 1].focus();
+      });
+
+      // NCR 초기화
+      document.getElementById('btnResetNcr').addEventListener('click', async () => {
+        const ok = await openDialog({
+          title: '부적합 시정조치 요구서 초기화',
+          message: '작성 중인 부적합 시정조치 요구서 내용을 모두 초기화하시겠습니까?',
+          confirmText: '초기화',
+          cancelText: '취소',
+          danger: true
+        });
+        if (!ok) return;
+        const prevSource = state.ncrData?.source || 'embedded';
+        state.ncrData = createDefaultNcrData(prevSource);
+        renderNcrAll();
+        showToast('요구서가 초기화되었습니다.', 'info');
+      });
+
+      // 설정 모달 이벤트
       document.getElementById('btnCloseSettings').addEventListener('click', closeSettingsModal);
       document.getElementById('settingsModal').addEventListener('click', (e) => {
         if (e.target.id === 'settingsModal') closeSettingsModal();
       });
 
-      // A4 미리보기 모달
-      document.getElementById('btnPreviewA4').addEventListener('click', openPreviewModal);
-      document.getElementById('btnClosePreview').addEventListener('click', closePreviewModal);
-      document.getElementById('previewModal').addEventListener('click', (e) => {
-        if (e.target.id === 'previewModal') closePreviewModal();
-      });
-      document.getElementById('btnPreviewExcel').addEventListener('click', () => {
-        closePreviewModal();
-        exportExcel();
-      });
-
-      // 설정: 구글 시트 링크 적용
       document.getElementById('btnApplyUrl').addEventListener('click', () => {
         const newUrl = document.getElementById('sheetUrlInput').value.trim();
         if (!extractSpreadsheetId(newUrl)) {
@@ -1695,10 +2774,21 @@
         state.sheetNames = [...DEFAULT_SHEET_NAMES];
         state.sheetsData = {};
         closeSettingsModal();
-        loadSheet(state.sheetNames[0], true);
+        loadSheet(state.sheetNames[0], true, true);
       });
 
-      // 설정: 로컬 .xlsx 불러오기
+      document.getElementById('btnApplyNcrUrl').addEventListener('click', () => {
+        const newUrl = document.getElementById('ncrSheetUrlInput').value.trim();
+        if (!extractSpreadsheetId(newUrl)) {
+          showToast('올바른 부적합 시정조치 요구서 구글 시트 링크를 입력해 주세요.', 'error');
+          return;
+        }
+        state.ncrSheetUrl = newUrl;
+        closeSettingsModal();
+        loadNcrSheet(true, true);
+      });
+
+      // 로컬 .xlsx 업로드
       document.getElementById('btnLocalFile').addEventListener('click', () => {
         document.getElementById('localFileInput').click();
       });
@@ -1708,29 +2798,43 @@
         e.target.value = '';
       });
 
-      // 설정: 내장 양식으로 전환
+      // 내장 기본 양식 복구
       document.getElementById('btnUseEmbedded').addEventListener('click', () => {
         state.sheetNames = [...DEFAULT_SHEET_NAMES];
         state.sheetsData = {};
+        DEFAULT_SHEET_NAMES.forEach(name => {
+          state.sheetsData[name] = loadEmbeddedSheet(name);
+        });
         state.currentSheet = DEFAULT_SHEET_NAMES[0];
-        state.sheetsData[state.currentSheet] = loadEmbeddedSheet(state.currentSheet);
+        state.resultFilter = 'ALL';
+        state.categoryFilter = 'ALL';
+        updateViewMode();
         updateSourceBadge('embedded');
         hideStatusBanner();
         renderTabs();
         renderAll();
         closeSettingsModal();
-        showToast('내장 기본 체크리스트 양식으로 전환했습니다.', 'info');
+        scrollToTopSmooth();
+        showToast('내장 기본 양식으로 전환되었습니다.', 'info');
       });
 
-      // 하단 내보내기 버튼
+      // A4 미리보기 모달 이벤트
+      document.getElementById('btnClosePreview').addEventListener('click', closePreviewModal);
+      document.getElementById('previewModal').addEventListener('click', (e) => {
+        if (e.target.id === 'previewModal') closePreviewModal();
+      });
+      document.getElementById('btnPreviewExcel').addEventListener('click', () => {
+        closePreviewModal();
+        exportExcel();
+      });
+
+      // 하단 고정 Excel 저장 버튼
       document.getElementById('btnExportExcel').addEventListener('click', exportExcel);
     }
 
     // 앱 시작
-    window.addEventListener('DOMContentLoaded', () => {
-      initEvents();
-      loadSheet(state.currentSheet);
-    });
+    initEvents();
+    loadSheet(state.currentSheet);
   </script>
 </body>
 </html>
